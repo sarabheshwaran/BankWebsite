@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,56 +20,51 @@ public class UserDao implements IUserDao {
 		connection = ConnectionManager.getConnection();
 	}
 
-//	private static final StringBuilder getQuery = new StringBuilder("SELECT * FROM USER WHERE ");
-
-//	@Override
-//	public List<User> getUsers(String field, Object value) throws CustomBankException {
-//
-//		List<User> users = new ArrayList<User>();
-//
-//		HelperUtils.nullCheck(value);
-//
-//		getQuery.append(field).append(" = ? ;");
-//
-//		try (PreparedStatement statement = connection.prepareStatement(getQuery.toString())) {
-//
-//			HelperUtils.setParameter(statement, 1, value);
-//			ResultSet resultSet = statement.executeQuery();
-//
-//			while (resultSet.next()) {
-//
-//				User user = mapUser(resultSet);
-//				users.add(user);
-//			}
-//
-//		} catch (SQLException e) {
-//			throw new CustomBankException(e.getMessage());
-//		}
-//
-//		return users;
-//
-//	}
 	
 	@Override
-	public List<User> getUsers(User user) throws CustomBankException {
+	public User getUserWithId(int userId) throws CustomBankException{
+		
+		String getQuery = "SELECT * FROM USER WHERE ID = '"+userId+"'";
+		
+		List<User> users = getUsers(getQuery);
+		
+		if(!users.isEmpty()) {
+			return users.get(0);
+		}else {
+			return null;
+		}
+		
+	}
+	
+	@Override
+	public User getUserWithEmail(String email) throws CustomBankException{
+		
+		String getQuery = "SELECT * FROM USER WHERE EMAIL = '"+email+"'";
+		
+		List<User> users = getUsers(getQuery);
+		
+		if(!users.isEmpty()) {
+			return users.get(0);
+		}else {
+			return null;
+		}
+		
+	}
+	
+	public List<User> getUsers(String query) throws CustomBankException {
 
 		List<User> users = new ArrayList<User>();
 
-		HelperUtils.nullCheck(user);
 
-		StringBuilder getQuery = new StringBuilder("SELECT * FROM USER WHERE ");
-		
-		getQuery.append(getFieldList(user, " AND "));
+		try (Statement statement = connection.createStatement()) {
 
-		try (PreparedStatement statement = connection.prepareStatement(getQuery.toString())) {
-
-			setValues(statement, user);
 			
-			ResultSet resultSet = statement.executeQuery();
+			ResultSet resultSet = statement.executeQuery(query);
 
+			
 			while (resultSet.next()) {
 
-				user = mapUser(resultSet);
+				User user = mapUser(resultSet);
 				users.add(user);
 			}
 
@@ -79,44 +75,65 @@ public class UserDao implements IUserDao {
 		return users;
 
 	}
+	
+	@Override
+	public void updateUser(User user) throws CustomBankException{
+		
+		HelperUtils.nullCheck(user);
+		
+		 StringBuilder updateQuery = new StringBuilder("UPDATE USER SET  ");
+
+		updateQuery.append(getFieldList(user)).append("WHERE ID = ");
+
+		try (PreparedStatement statement = connection.prepareStatement(updateQuery.toString())) {
+
+			setValues(statement, user);
+			statement.executeUpdate();
+
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+	}
 
 
 
-	private String getFieldList(User user,String delimeter ) {
+	private String getFieldList(User user ) {
 		
 		
 		StringBuilder queryBuilder = new StringBuilder("  ");
         
-		if (user.getId() != 0) {
-		    queryBuilder.append("USER.ID = ? " + delimeter );
-		}
+		
 		if (user.getName() != null) {
-		    queryBuilder.append("NAME = ? " + delimeter );
+		    queryBuilder.append("NAME = ? , " );
 		}
 		if (user.getEmail() != null) {
-		    queryBuilder.append("EMAIL = ? " + delimeter );
+		    queryBuilder.append("EMAIL = ? , " );
 		}
 		if (user.getPhone() != null) {
-		    queryBuilder.append("PHONE = ? " + delimeter );
+		    queryBuilder.append("PHONE = ? , " );
 		}
 		if (user.getdOB() != 0) {
-		    queryBuilder.append("DOB = ? " + delimeter );
+		    queryBuilder.append("DOB = ? , " );
 		}
 		if (user.getGender() != null) {
-		    queryBuilder.append("GENDER = ? " + delimeter );
+		    queryBuilder.append("GENDER = ? , " );
 		}
 		if (user.getPassword() != null) {
-		    queryBuilder.append("PASSWORD = ?" + delimeter );
+		    queryBuilder.append("PASSWORD = ?, " );
 		}
 		if (user.getUserType() != null) {
-		    queryBuilder.append("USER_TYPE = ? " + delimeter );
+		    queryBuilder.append("USER_TYPE = ? , " );
 		}
 		if (user.getStatus() != null) {
-		    queryBuilder.append("STATUS = ? " + delimeter );
+		    queryBuilder.append("STATUS = ? , " );
+		}
+		if (user.getId() != 0) {
+		    queryBuilder.append("USER.ID = ? , " );
 		}
 		
 
-		 queryBuilder.delete(queryBuilder.length() - (delimeter.length() + 1), queryBuilder.length());
+		 queryBuilder.delete(queryBuilder.length() - 2, queryBuilder.length());
 		 return queryBuilder.toString();
 		
 	}
@@ -126,9 +143,7 @@ public class UserDao implements IUserDao {
 		
 		int index = 1;
 		
-		if (user.getId() != 0) {
-		    statement.setObject(index++, user.getId());
-		}
+		
 		if (user.getName() != null) {
 		    statement.setObject(index++, user.getName());
 		}
@@ -152,6 +167,9 @@ public class UserDao implements IUserDao {
 		}
 		if (user.getStatus() != null) {
 		    statement.setObject(index++, user.getStatus());
+		}
+		if (user.getId() != 0) {
+		    statement.setObject(index++, user.getId());
 		}
 		
 

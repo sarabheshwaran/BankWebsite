@@ -1,16 +1,36 @@
 package uub.logicalLayer;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 import uub.model.Account;
 import uub.model.Transaction;
 import uub.persistentLayer.ITransactionDao;
-import uub.persistentLayer.TransactionDao;
 import uub.staticLayer.CustomBankException;
 
 public class TransactionHelper {
+	private ITransactionDao transactionDao;
+
+	public TransactionHelper() throws CustomBankException {
+
+		try {
+			
+			Class<?> TransactionDao = Class.forName("uub.persistentLayer.TransactionDao");
+			Constructor<?> transDao = TransactionDao.getDeclaredConstructor();
+
+			transactionDao = (ITransactionDao) transDao.newInstance();
+
+		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			
+			throw new CustomBankException("Error getting Data ! ", e);
+		}
+
+	}
+	
 
 	public void performTransaction(Transaction transaction) throws CustomBankException {
 
-		ITransactionDao transactionDao = new TransactionDao();
 		AccountHelper accountHelper = new AccountHelper();
 
 		transaction.setTime(System.currentTimeMillis());
@@ -49,7 +69,6 @@ public class TransactionHelper {
 
 	private void performRecepientTransaction(Transaction transaction) throws CustomBankException {
 
-		ITransactionDao transactionDao = new TransactionDao();
 		AccountHelper accountHelper = new AccountHelper();
 
 		int accNo = transaction.getTransactionAcc();

@@ -18,113 +18,174 @@ import uub.staticLayer.CustomBankException;
 
 public class EmployeePage extends Runner {
 
-	private static EmployeeHelper employeeHelper = new EmployeeHelper();
 
 	private static Employee employee;
 
 	public EmployeePage(String username) throws CustomBankException {
+		
+		EmployeeHelper employeeHelper = new EmployeeHelper();
 
 		employee = employeeHelper.getProfile(username);
 		String role = employee.getRole();
 
 		boolean exit = false;
 
-		while (!exit) {
+		if (role.equals("Admin")) {
 
-			try {
-				int i = 1;
+			while (!exit) {
 
-				logger.fine("Employee Portal");
-				logger.info("Please Select an option : -");
-				logger.info(i++ + ". See Profile.");
-				logger.info(i++ + ". See All Active accounts.");
-				logger.info(i++ + ". See Inactive accounts.");
-				if (role.equals("Admin")) {
+				try {
+					int i = 1;
 
+					logger.fine("Employee Portal");
+					logger.info("Please Select an option : -");
+					logger.info(i++ + ". See Profile.");
+					logger.info(i++ + ". See All Customers.");
 					logger.info(i++ + ". See All Branches.");
+					logger.info(i++ + ". Add Customer.");
+					logger.info(i++ + ". Logout");
 
-				} else {
-
-					logger.info(i++ + ". Add Account.");
-
-				}
-				logger.info(i++ + ". Add Customer.");
-				logger.info(i++ + ". Logout");
-
-				int choice = scanner.nextInt();
-				scanner.nextLine();
-
-				switch (choice) {
-				case 1: {
-
-					logProfile();
-					logger.warning("Press Enter to exit ");
-					scanner.nextLine();
-					break;
-				}
-				case 2: {
-
-					logActiveAccounts();
-					logger.warning("Press Enter to Exit");
+					int choice = scanner.nextInt();
 					scanner.nextLine();
 
-					break;
-				}
-				case 3: {
+					switch (choice) {
+					case 1: {
 
-					logInactiveAccounts();
-					logger.warning("Press Enter to Exit");
-					scanner.nextLine();
+						logProfile();
+						logger.warning("Press Enter to exit ");
+						scanner.nextLine();
+						break;
+					}
+					case 2: {
 
-					break;
-				}
-				case 5: {
+						logger.info("Customer List : ");
 
-					createCustomer();
-					logger.warning("Press Enter to Exit");
-					scanner.nextLine();
-					break;
-				}
-				case 4: {
+//						logBranches();
 
-					if (role.equals("Admin")) {
+						break;
+					}
+					case 3: {
+
 						logger.info("BranchList : ");
 
 						logBranches();
 
-					} else {
-						createAccount(employee.getBranchId());
-						logger.warning("Press Enter to Exit");
-						scanner.nextLine();
+						break;
 					}
 
-					break;
-				}
-				case 10:
+					case 4: {
 
-					break;
-				case 6: {
+						createCustomer();
+						logger.warning("Press Enter to Exit");
+						scanner.nextLine();
+						break;
+					}
+					
+					case 10:
 
-					exit = true;
-					break;
+						break;
+					case 6: {
+
+						exit = true;
+						break;
+					}
+					default:
+						break;
+					}
+				} catch (InputMismatchException e) {
+					logger.severe("Invalid input!");
+					scanner.next();
+				} catch (CustomBankException e) {
+					logger.severe(e.getMessage());
+					scanner.next();
 				}
-				default:
-					break;
-				}
-			} catch (InputMismatchException e){
-				logger.severe("Invalid input!");
-				scanner.next();
-			}
-			catch ( CustomBankException e) {
-				logger.severe(e.getMessage());
-				scanner.next();
+
 			}
 
 		}
 
+		else {
+
+			while (!exit) {
+
+				try {
+					int i = 1;
+
+					logger.fine("Employee Portal");
+					logger.info("Please Select an option : -");
+					logger.info(i++ + ". See Profile.");
+					logger.info(i++ + ". See All Active accounts.");
+					logger.info(i++ + ". See Inactive accounts.");
+
+					logger.info(i++ + ". Add Account.");
+
+					logger.info(i++ + ". Add Customer.");
+					logger.info(i++ + ". Logout");
+
+					int choice = scanner.nextInt();
+					scanner.nextLine();
+
+					switch (choice) {
+					case 1: {
+
+						logProfile();
+						logger.warning("Press Enter to exit ");
+						scanner.nextLine();
+						break;
+					}
+					case 2: {
+
+						logActiveAccounts(employee.getBranchId());
+						logger.warning("Press Enter to Exit");
+						scanner.nextLine();
+
+						break;
+					}
+					case 3: {
+
+						logInactiveAccounts(employee.getBranchId());
+						logger.warning("Press Enter to Exit");
+						scanner.nextLine();
+
+						break;
+					}
+					case 5: {
+
+						createCustomer();
+						logger.warning("Press Enter to Exit");
+						scanner.nextLine();
+						break;
+					}
+					case 4: {
+
+						createAccount(employee.getBranchId());
+						logger.warning("Press Enter to Exit");
+						scanner.nextLine();
+
+						break;
+					}
+					case 10:
+
+						break;
+					case 6: {
+
+						exit = true;
+						break;
+					}
+					default:
+						break;
+					}
+				} catch (InputMismatchException e) {
+					logger.severe("Invalid input!");
+					scanner.next();
+				}
+
+			}
+		}
+
 	}
 
-	private void createAccount(int branchId) throws CustomBankException {
+	private void createAccount(int branchId) {
 		boolean exit = false;
 		Account account = new Account();
 
@@ -144,7 +205,7 @@ public class EmployeePage extends Runner {
 				AccountHelper accountHelper = new AccountHelper();
 
 				accountHelper.addAccount(account);
-				
+
 				logger.warning("Account Created !");
 				exit = true;
 
@@ -204,6 +265,10 @@ public class EmployeePage extends Runner {
 				EmployeeHelper employeeHelper = new EmployeeHelper();
 
 				employeeHelper.addCustomer(customer);
+
+				logger.warning("CUstomer created ");
+				exit = true;
+
 			} catch (CustomBankException | ParseException e) {
 				logger.warning(e.getMessage());
 			}
@@ -224,6 +289,8 @@ public class EmployeePage extends Runner {
 				logger.fine("Employee Creation:");
 
 				logger.info("Enter Branch id :");
+				employee.setBranchId(scanner.nextInt());
+				scanner.nextLine();
 
 				logger.info("Enter Name: ");
 				employee.setName(scanner.nextLine());
@@ -258,6 +325,8 @@ public class EmployeePage extends Runner {
 				EmployeeHelper employeeHelper = new EmployeeHelper();
 
 				employeeHelper.addEmployee(employee);
+				logger.warning("Employee Created ");
+				exit = true;
 			} catch (CustomBankException | ParseException e) {
 				logger.warning(e.getMessage());
 			}
@@ -268,55 +337,68 @@ public class EmployeePage extends Runner {
 
 	}
 
-	private void logActiveAccounts() throws CustomBankException {
-		List<User> users = employeeHelper.getActiveAccounts(employee.getBranchId());
+	private void logActiveAccounts(int branchId) {
 
-		int size = users.size();
-		logger.info("Active accounts of your branch : - ");
-		if (size <= 0) {
-			logger.info("There are no active accounts !");
+		try {
+			EmployeeHelper employeeHelper = new EmployeeHelper();
+			List<User> users = employeeHelper.getActiveAccounts(branchId);
 
-		} else {
+			int size = users.size();
+			logger.info("Active accounts of your branch : - ");
+			if (size <= 0) {
+				logger.info("There are no active accounts !");
 
-			for (User user : users) {
+			} else {
 
-				logger.info(user.toString());
+				for (User user : users) {
 
+					logger.info(user.toString());
+
+				}
 			}
+		} catch (CustomBankException e) {
+			logger.severe(e.getMessage());
 		}
 	}
 
-	private void logInactiveAccounts() throws CustomBankException {
+	private void logInactiveAccounts(int branchId){
+		try {
+			EmployeeHelper employeeHelper = new EmployeeHelper();
+			List<User> users = employeeHelper.getInactiveAccounts(branchId);
 
-		List<User> users = employeeHelper.getInactiveAccounts(employee.getBranchId());
+			int size = users.size();
 
-		int size = users.size();
+			logger.info("Inactive accounts are : - ");
+			if (size <= 0) {
+				logger.info("No Inactive accounts !");
 
-		logger.info("Inactive accounts are : - ");
-		if (size <= 0) {
-			logger.info("No Inactive accounts !");
+			} else {
 
-		} else {
+				for (User user : users) {
 
-			for (User user : users) {
+					logger.info(user.toString());
 
-				logger.info(user.toString());
-
+				}
 			}
+		} catch (CustomBankException e) {
+			logger.severe(e.getMessage());
 		}
 
 	}
-	
-
 
 	private void logBranches() throws CustomBankException {
 
+		boolean exit = false;
+		while(!exit) {
+			
+			try {
+			
 		BranchHelper branchHelper = new BranchHelper();
 		logger.info("All Branches :");
 
 		List<Branch> branches = branchHelper.getAllBranches();
 		int size = branches.size();
-		
+
 		for (Branch branch : branches) {
 
 			logger.info(branch.toString());
@@ -326,38 +408,119 @@ public class EmployeePage extends Runner {
 			logger.info("No Branches Available");
 			logger.info("0. Create Branch.");
 		} else {
-
-			logger.info("0. Create Branch.");
-			logger.info("Enter Branch Id to see Employees.");
+			int i=0;
+			logger.info(i+++". Create Branch.");
+			logger.info(i+++". See employees of branch");
+			logger.info(i+++". See active accounts of branch");
+			logger.info(i+++". See inactive accounts of branch");
+			logger.info(i+++". update branch");
+			logger.info("-1. ");
 
 		}
-		
+
 		int choice = scanner.nextInt();
 		scanner.nextLine();
-		
-		if(choice == 0) {
-			
-		}
-		else if(choice > 0 && choice <= size) {
-			
-			logEmployees(choice);
-		}
-		else {
-			throw new CustomBankException("Enter valid input !");		}
-		
-		
 
+		switch (choice) {
+		case 0:{
+			
+			createBranch();
+		}
+		case 1:{
+			logger.info("Enter branch id  :");
+			logEmployees(scanner.nextInt());
+			scanner.nextLine();
+			break;}
+		case 2:{
+			logger.info("Enter branch id  :");
+			logActiveAccounts(scanner.nextInt());
+			scanner.nextLine();
+			break;
+		}
+		case 3:{
+			logger.info("Enter branch id  :");
+			logInactiveAccounts(scanner.nextInt());
+			scanner.nextLine();
+			break;
+		}
+		case 4:{
+			logger.info("Enter branch id  :");
+			logActiveAccounts(scanner.nextInt());
+			scanner.nextLine();
+			break;
+		}
+		case -1:{
+			exit = true;
+			break;
+		}
+		default:{
+			logger.warning("Enter correct option !");
+			break;}
+		}
+			}catch (InputMismatchException e) {
+				
+				logger.severe("Invalid input !");
+				scanner.next();
+			}
+			catch( CustomBankException e) {
+				logger.severe(e.getMessage());
+				scanner.next();
+			}
+		
+		}
+
+	}
+
+	private void createBranch() {
+		
+		boolean exit = false;
+		
+		while(!exit) {
+		try {
+		
+		BranchHelper branchHelper = new BranchHelper();
+		
+		logger.finer("Branch Creation :");
+		
+		Branch branch = new Branch();
+		
+		logger.info("Enter branch name :");
+		branch.setName(scanner.nextLine());
+		
+		logger.info("Enter branch address :");
+		branch.setAddress(scanner.nextLine());
+		
+		
+		branchHelper.addBranch(branch);
+		exit = true;
+		}
+		catch(CustomBankException e) {
+			logger.warning(e.getMessage());
+			scanner.next();
+		}
+		catch(InputMismatchException e) {
+			logger.severe("Invalid input !");
+			scanner.next();
+		}}
+		
+		
 	}
 
 	private void logEmployees(int branchId) throws CustomBankException {
 
+		boolean exit = false;
+		
+		while(!exit) {
+			
+			try {
+		
 		EmployeeHelper employeeHelper = new EmployeeHelper();
 		logger.info("Employees are :");
 
 		List<Employee> employees = employeeHelper.getEmployees(branchId);
 
 		int size = employees.size();
-		
+
 		for (Employee employee : employees) {
 
 			logger.info(employee.toString());
@@ -367,27 +530,44 @@ public class EmployeePage extends Runner {
 			logger.info("No Employees Available");
 			logger.info("0. Create Employee.");
 		} else {
-
-			logger.info("0. Create Employee.");
-			logger.info("Enter Employee Id to delete Employee.");
+			int i=0;
+			logger.info(i+++". Create Employee.");
+			logger.info("-1. Exit.");
 
 		}
-		
+
 		int choice = scanner.nextInt();
 		scanner.nextLine();
 		
-		if(choice == 0) {
-			createEmployee();
-		}
-		else if(choice > 0 && choice <= size) {
+		switch (choice) {
+		case 0 :{
 			
-			employeeHelper.deActivateAcc(choice);
+			createEmployee();
+			
+			break;
+			}
+		
+		case -1 :{
+			
+			exit = true;
+			
+			break;
+			}
+		
+		default:{
+			logger.warning("Enter correct option !");
+			break;}
 		}
-		else {
-			throw new CustomBankException("Enter valid input !");		}
-		
-		
 
+			}catch(InputMismatchException e) {
+				logger.severe("Invalid input !");
+				scanner.next();
+			}catch (CustomBankException e) {
+				
+				logger.severe(e.getMessage());
+				scanner.next();
+			}
+		}
 	}
 
 	private void logProfile() {

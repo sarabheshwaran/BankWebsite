@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,24 +20,31 @@ public class BranchDao implements IBranchDao {
 		connection = ConnectionManager.getConnection();
 	}
 
-	private static final StringBuilder getQuery1 = new StringBuilder("SELECT * FROM BRANCH WHERE ");
 	private static final StringBuilder getQuery2 = new StringBuilder("SELECT * FROM BRANCH ");
 
 	private static final String addQuery = "INSERT INTO BRANCH (IFSC,NAME,ADDRESS) VALUES (?,?,?)";
 
+	public List<Branch> getBranchWithId(int id) throws CustomBankException{
+		
+		String getQuery = "SELECT * FROM BRANCH WHERE ID = "+id;
+		
+		return getBranches(getQuery);
+		
+		
+		
+	}
+	
 	@Override
-	public List<Branch> getBranches(String field, Object value) throws CustomBankException {
+	public List<Branch> getBranches(String query) throws CustomBankException {
 
 		List<Branch> branches = new ArrayList<>();
 
-		HelperUtils.nullCheck(value);
+		HelperUtils.nullCheck(query);
 
-		getQuery1.append(field).append(" = ?");
 
-		try (PreparedStatement statement = connection.prepareStatement(getQuery1.toString())) {
-			HelperUtils.setParameter(statement, 1, value);
+		try (Statement statement = connection.createStatement()) {
 
-			ResultSet resultSet = statement.executeQuery();
+			ResultSet resultSet = statement.executeQuery(query);
 
 			while (resultSet.next()) {
 				Branch branch = mapBranch(resultSet);
@@ -71,6 +79,28 @@ public class BranchDao implements IBranchDao {
 
 		return branches;
 
+	}
+	
+
+	@Override
+	public int getLastId() throws CustomBankException {
+		
+		int lastId = -1; 
+
+		 String query = "SELECT MAX(ID) AS max_id FROM BRANCH";
+		 
+	    try (PreparedStatement statement = connection.prepareStatement(query)) {
+	        ResultSet resultSet = statement.executeQuery();
+
+	        if (resultSet.next()) {
+	            lastId = resultSet.getInt("max_id");
+	        }
+
+	    } catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+	    return lastId;
 	}
 
 	@Override
@@ -173,5 +203,6 @@ public class BranchDao implements IBranchDao {
 		}
 
 	}
+
 
 }

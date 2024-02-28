@@ -1,6 +1,5 @@
 package uub.presentation;
 
-import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -24,36 +23,8 @@ public class Runner {
 	
 	}
 	
-	public static void main(String[] args) throws SecurityException, IOException, CustomBankException {
+	public static void main(String[] args) throws  CustomBankException {
 		
-//		EmployeeHelper em = new EmployeeHelper();
-		
-//		em.deActivateAcc(4);
-
-//		Employee employee = new Employee(1, "Light Yagami", "kira", "1234321234", 0, "unknown", "kira", "Employee", "Active", "Admin", 1);
-//
-//		ICustomerDao cus = new CustomerDao();
-//		
-//		Customer cc = new Customer();
-//		
-//		cc.setName("sara");
-//		
-//		System.out.println(cus.getCustomers(cc));
-//		
-//		AccountHelper acc = new AccountHelper();
-//		
-//		Account a = new Account();
-//		
-//		a.setAccNo(3);
-//		
-//		try {
-//		System.out.println(acc.getBalance(1));}
-//		catch (Exception e) {
-//			
-//			e.printStackTrace();
-//		}
-//		
-//		System.out.println(acc.getBalance(3));
 		
 		LoginHelper loginHelper = new LoginHelper();
 		

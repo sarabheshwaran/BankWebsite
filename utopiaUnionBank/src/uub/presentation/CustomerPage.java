@@ -11,13 +11,15 @@ import uub.staticLayer.CustomBankException;
 
 public class CustomerPage extends Runner {
 	
-	private static CustomerHelper customerHelper = new CustomerHelper();
-	private static TransactionHelper transactionHelper = new TransactionHelper();
 
 	private static Customer customer ;
 
 	public CustomerPage(String username) throws CustomBankException {
 
+
+		CustomerHelper customerHelper = new CustomerHelper();
+		TransactionHelper transactionHelper = new TransactionHelper();
+		
 		customer = customerHelper.getProfile(username);
 
 		boolean exit = false;
@@ -88,6 +90,8 @@ public class CustomerPage extends Runner {
 	}
 
 	private Transaction getTransaction() throws CustomBankException {
+		CustomerHelper customerHelper = new CustomerHelper();
+		
 		List<Account> accounts = customerHelper.getAccounts(customer.getId());
 		
 		
@@ -118,6 +122,9 @@ public class CustomerPage extends Runner {
 	}
 
 	private void logAccounts() throws CustomBankException {
+		
+		CustomerHelper customerHelper = new CustomerHelper();
+		
 		List<Account> accounts = customerHelper.getAccounts(customer.getId());
 
 		int size = accounts.size();
@@ -154,6 +161,8 @@ public class CustomerPage extends Runner {
 	}
 
 	private void displayHistory(int accNo) throws CustomBankException {
+		
+		CustomerHelper customerHelper = new CustomerHelper();
 		
 		List<Transaction> transactions = customerHelper.getHistory(accNo);
 		if(!transactions.isEmpty()) {

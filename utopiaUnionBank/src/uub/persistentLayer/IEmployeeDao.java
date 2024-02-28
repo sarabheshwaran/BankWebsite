@@ -19,11 +19,10 @@ public interface IEmployeeDao {
 
 
 
-	List<Employee> getEmployees(int id) throws CustomBankException;
+	Employee getEmployees(int id) throws CustomBankException;
 
-	List<Employee> getEmployeesWithEmail(String email) throws CustomBankException;
+	Employee getEmployeesWithEmail(String email) throws CustomBankException;
 
-	List<Employee> getEmployees(String employee) throws CustomBankException;
 
 	List<Employee> getEmployeesWithBranch(int branchId) throws CustomBankException;
 

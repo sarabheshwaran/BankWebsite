@@ -116,13 +116,13 @@ public class TransactionDao implements ITransactionDao {
 		
 		int lastId = -1; 
 
-	    String query = "SELECT LAST_INSERT_ID() AS lastId";
+	    String query = "SELECT MAX(ID) AS max_id FROM TRANSACTION";
 
 	    try (PreparedStatement statement = connection.prepareStatement(query)) {
 	        ResultSet resultSet = statement.executeQuery();
 
 	        if (resultSet.next()) {
-	            lastId = resultSet.getInt("lastId");
+	            lastId = resultSet.getInt("max_id");
 	        }
 
 	    } catch (SQLException e) {

@@ -31,20 +31,32 @@ public class EmployeeDao implements IEmployeeDao{
 	
 	
 	@Override
-	public List<Employee> getEmployees(int id) throws CustomBankException {
+	public Employee getEmployees(int id) throws CustomBankException {
 
 		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.ID = " + id;
 
-		return getEmployees(getQuery);
+		List<Employee> employees =  getEmployees(getQuery);
+		
+		if(!employees.isEmpty()) {
+			return employees.get(0);
+		}else {
+			return null;
+		}
 
 	}
 
 	@Override
-	public List<Employee> getEmployeesWithEmail(String email) throws CustomBankException {
+	public Employee getEmployeesWithEmail(String email) throws CustomBankException {
 
 		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMAIL = '" + email+"'";
 
-		return getEmployees(getQuery);
+		List<Employee> employees =  getEmployees(getQuery);
+		
+		if(!employees.isEmpty()) {
+			return employees.get(0);
+		}else {
+			return null;
+		}
 
 	}
 	
@@ -58,8 +70,7 @@ public class EmployeeDao implements IEmployeeDao{
 	}
 
 	
-	@Override
-	public List<Employee> getEmployees(String query) throws CustomBankException {
+	private List<Employee> getEmployees(String query) throws CustomBankException {
 		
 		
 		

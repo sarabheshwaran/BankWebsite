@@ -1,6 +1,5 @@
 package uub.logicalLayer;
 
-import java.util.List;
 
 import uub.model.Employee;
 import uub.model.User;
@@ -20,15 +19,10 @@ public class LoginHelper {
 		
 		passWord = HashEncoder.encode(passWord);
 
-		User user = new User();
 		
-		user.setEmail(userName);
-		
-		List<User> users = userDao.getUsers(user);
+		User user = userDao.getUserWithEmail(userName);
 
-		if (!users.isEmpty()) {
-
-			user = users.get(0);
+		if (user!=null) {
 
 			if (user.getPassword().equals(passWord)) {
 
@@ -39,10 +33,8 @@ public class LoginHelper {
 				} else {
 					
 
-					List<Employee> employees = employeeDao.getEmployeesWithEmail(userName);
+					Employee employee = employeeDao.getEmployeesWithEmail(userName);
 					
-					Employee employee = employees.get(0);
-
 					String role = employee.getRole();
 
 					if (role.equals("Admin")) {
