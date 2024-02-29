@@ -14,5 +14,7 @@ public interface ITransactionDao {
 	public int getLastId() throws CustomBankException;
 
 	List<Transaction> getTransactions(Transaction transaction) throws CustomBankException;
+
+	List<Transaction> getTransactions(int accNo, long time) throws CustomBankException;
 	
 }

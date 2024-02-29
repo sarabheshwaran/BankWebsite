@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uub.model.Employee;
+import uub.staticLayer.ConnectionManager;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HelperUtils;
 
@@ -31,32 +32,23 @@ public class EmployeeDao implements IEmployeeDao{
 	
 	
 	@Override
-	public Employee getEmployees(int id) throws CustomBankException {
+	public List<Employee> getEmployees(int id) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.ID = " + id;
+		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.ID = " + id +" AND STATUS = 'ACTIVE'";
 
-		List<Employee> employees =  getEmployees(getQuery);
+		return  getEmployees(getQuery);
 		
-		if(!employees.isEmpty()) {
-			return employees.get(0);
-		}else {
-			return null;
-		}
+
 
 	}
 
 	@Override
-	public Employee getEmployeesWithEmail(String email) throws CustomBankException {
+	public List<Employee> getEmployeesWithEmail(String email) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMAIL = '" + email+"'";
+		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMAIL = '" + email+"' AND STATUS = 'ACTIVE'";
 
-		List<Employee> employees =  getEmployees(getQuery);
+		return  getEmployees(getQuery);
 		
-		if(!employees.isEmpty()) {
-			return employees.get(0);
-		}else {
-			return null;
-		}
 
 	}
 	
@@ -64,7 +56,6 @@ public class EmployeeDao implements IEmployeeDao{
 	public List<Employee> getEmployeesWithBranch(int branchId) throws CustomBankException {
 
 		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.BRANCH_ID = " + branchId;
-
 		return getEmployees(getQuery);
 
 	}
@@ -72,11 +63,7 @@ public class EmployeeDao implements IEmployeeDao{
 	
 	private List<Employee> getEmployees(String query) throws CustomBankException {
 		
-		
-		
 		List<Employee> employees = new ArrayList<Employee>();
-		
-		
 		
 		try(Statement statement = connection.createStatement()) {
 			
@@ -108,7 +95,6 @@ public class EmployeeDao implements IEmployeeDao{
 		
 		
 		try(PreparedStatement statement = connection.prepareStatement(getQuery2.toString())) {
-			
 			
 			ResultSet resultSet = statement.executeQuery();
 			
@@ -191,7 +177,6 @@ public class EmployeeDao implements IEmployeeDao{
 		try(PreparedStatement statement = connection.prepareStatement(updateQuery.toString())) {
 			
 			setValues(statement, employee);
-			
 			statement.executeUpdate();
 			
 			

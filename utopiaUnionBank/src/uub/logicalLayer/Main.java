@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import uub.model.Account;
 import uub.staticLayer.HelperUtils;
 
 class Employee {
@@ -88,16 +89,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Admin admin1 = new Admin("Admin1");
-        admin1.adminDetails = new AdminDetails("AdminDetails1");
-
-        Branch branch1 = new Branch("Branch1");
-        branch1.employees.add(new Employee("Employee1"));
-        branch1.employees.add(new Employee("Employee2"));
-
-        admin1.branches.add(branch1);
-
-        printOrganizationTree(admin1, "",true);
-    	
+//        Admin admin1 = new Admin("Admin1");
+//        admin1.adminDetails = new AdminDetails("AdminDetails1");
+//
+//        Branch branch1 = new Branch("Branch1");
+//        branch1.employees.add(new Employee("Employee1"));
+//        branch1.employees.add(new Employee("Employee2"));
+//
+//        admin1.branches.add(branch1);
+//
+//        printOrganizationTree(admin1, "",true);
+//    	
+    	Account acc = null;
+    	System.out.println(acc);
     }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import uub.model.Account;
-import uub.model.User;
+import uub.staticLayer.ConnectionManager;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HelperUtils;
 
@@ -23,76 +23,54 @@ public class AccountDao implements IAccountDao {
 		connection = ConnectionManager.getConnection();
 	}
 
-	
 	private static final String addQuery = "INSERT INTO ACCOUNTS (USER_ID,BRANCH_ID,TYPE,BALANCE,STATUS) VALUES (?,?,?,?,?)";
 
 	@Override
-	public List<User> getUserAccounts(int userId, boolean active) throws CustomBankException {
+	public List<Account> getUserAccounts(int userId, String status) throws CustomBankException {
 
-		String status;
-		if (active) {
-			status = "ACTIVE";
-		} else {
-			status = "INACTIVE";
-		}
-
-		String getQuery = "SELECT * FROM ACCOUNTS JOIN USER ON USER.ID = ACCOUNTS.USER_ID WHERE USER_ID = " + userId + " AND ACCOUNTS.STATUS = '" + status+"'";
-
-		return getAccountsWithUser(getQuery);
-
-	}
-	
-	@Override
-	public List<User> getUserAccounts(int accNo) throws CustomBankException {
-
-		
-		String getQuery = "SELECT * FROM ACCOUNTS JOIN USER ON USER.ID = ACCOUNTS.USER_ID WHERE ACC_NO = " + accNo ;
-
-		return getAccountsWithUser(getQuery);
-
-	}
-
-	@Override
-	public List<User> getBranchAccounts(int branchId, boolean active) throws CustomBankException {
-
-		String status;
-		if (active) {
-			status = "ACTIVE";
-		} else {
-			status = "INACTIVE";
-		}
-
-		String getQuery = "SELECT * FROM ACCOUNTS JOIN USER ON USER.ID = ACCOUNTS.USER_ID WHERE BRANCH_ID = " + branchId + " AND ACCOUNTS.STATUS = '" + status+"'";
-
-		return getAccountsWithUser(getQuery);
-
-	}
-
-	@Override
-	public List<Account> getAllAccounts(int accNo, boolean active) throws CustomBankException {
-
-		String status;
-		String account;
-		
-		if(accNo!=0) {
-			account = "AND ACC_NO = "+ accNo;
-		}else {
-			account = "";
-		}
-		
-		if (active) {
-			status = "ACTIVE";
-		} else {
-			status = "INACTIVE";
-		}
-
-		String getQuery = "SELECT * FROM ACCOUNTS WHERE ACCOUNTS.STATUS = '" + status + "'" + account;
+		String getQuery = "SELECT * FROM ACCOUNTS JOIN USER ON USER.ID = ACCOUNTS.USER_ID WHERE USER_ID = " + userId
+				+ " AND ACCOUNTS.STATUS = '" + status + "'";
 
 		return getAccounts(getQuery);
 
 	}
 
-	
+	@Override
+	public Map<Integer, List<Account>> getBranchAccounts(int branchId, String status) throws CustomBankException {
+
+		String branch;
+
+		if (branchId != 0) {
+			branch = "AND BRANCH_ID = " + branchId;
+		} else {
+			branch = "";
+		}
+
+		String getQuery = "SELECT * FROM ACCOUNTS JOIN USER ON USER.ID = ACCOUNTS.USER_ID WHERE  ACCOUNTS.STATUS = '"
+				+ status + "'" + branch;
+
+		return getAccountsWithUser(getQuery);
+
+	}
+
+	@Override
+	public List<Account> getAccount(int accNo) throws CustomBankException {
+
+		String getQuery = "SELECT * FROM ACCOUNTS WHERE ACC_NO = " + accNo;
+
+		return getAccounts(getQuery);
+
+	}
+
+	@Override
+	public List<Account> getAllAccounts(String status) throws CustomBankException {
+
+		String getQuery = "SELECT * FROM ACCOUNTS WHERE ACCOUNTS.STATUS = '" + status + "'";
+
+		return getAccounts(getQuery);
+
+	}
+
 	@Override
 	public void addAccounts(List<Account> accounts) throws CustomBankException {
 
@@ -136,57 +114,53 @@ public class AccountDao implements IAccountDao {
 		}
 
 	}
-	
-	private List<Account> getAccounts(String query)throws CustomBankException{
-		
+
+	private List<Account> getAccounts(String query) throws CustomBankException {
+
+		HelperUtils.nullCheck(query);
+
 		List<Account> accounts = new ArrayList<Account>();
-		
+
 		try (Statement statement = connection.createStatement()) {
 
 			ResultSet resultSet = statement.executeQuery(query);
-			
+
 			Account account;
 			while (resultSet.next()) {
-				
+
 				account = mapAccount(resultSet);
 				accounts.add(account);
-				
-			}
-			
-			return accounts;
-			}
-	 catch (SQLException e) {
-		throw new CustomBankException(e.getMessage());
-	}
-		
-		
-		
-	}
-	
-	private List<User> getAccountsWithUser(String query) throws CustomBankException {
 
-		Map<Integer, User> userMap = new HashMap<Integer, User>();
+			}
+
+			return accounts;
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+	}
+
+	private Map<Integer, List<Account>> getAccountsWithUser(String query) throws CustomBankException {
+
+		Map<Integer, List<Account>> accountMap = new HashMap<Integer, List<Account>>();
 
 		try (Statement statement = connection.createStatement()) {
 
 			ResultSet resultSet = statement.executeQuery(query);
 			while (resultSet.next()) {
 
-				User user;
 				Account account;
 
 				int id = resultSet.getInt("USER_ID");
 
-				if (!userMap.containsKey(id)) {
+				if (!accountMap.containsKey(id)) {
 
-					user = mapUser(resultSet);
-					user.setAccounts(new ArrayList<Account>());
-					userMap.put(id, user);
+					accountMap.put(id, new ArrayList<Account>());
 
 				}
 				id = resultSet.getInt("USER_ID");
 				account = mapAccount(resultSet);
-				userMap.get(id).addAccount(account);
+				accountMap.get(id).add(account);
 
 			}
 
@@ -194,9 +168,8 @@ public class AccountDao implements IAccountDao {
 			throw new CustomBankException(e.getMessage());
 		}
 
-		return new ArrayList<User>(userMap.values());
+		return accountMap;
 	}
-
 
 	private Account mapAccount(ResultSet resultSet) throws SQLException {
 		Account account = new Account();
@@ -256,26 +229,8 @@ public class AccountDao implements IAccountDao {
 			statement.setObject(index++, account.getStatus());
 		}
 		if (account.getAccNo() != 0) {
-			statement.setInt(index, account.getAccNo() );
+			statement.setInt(index, account.getAccNo());
 		}
-
-	}
-
-	private User mapUser(ResultSet resultSet) throws SQLException {
-
-		User user = new User();
-
-		user.setId(resultSet.getInt("USER.ID"));
-		user.setName(resultSet.getString("USER.NAME"));
-		user.setEmail(resultSet.getString("USER.EMAIL"));
-		user.setPhone(resultSet.getString("USER.PHONE"));
-		user.setdOB(resultSet.getLong("USER.DOB"));
-		user.setGender(resultSet.getString("USER.GENDER"));
-		user.setPassword(resultSet.getString("USER.PASSWORD"));
-		user.setUserType(resultSet.getString("USER.USER_TYPE"));
-		user.setStatus(resultSet.getString("USER.STATUS"));
-
-		return user;
 
 	}
 

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uub.model.Branch;
+import uub.staticLayer.ConnectionManager;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HelperUtils;
 
@@ -20,65 +21,19 @@ public class BranchDao implements IBranchDao {
 		connection = ConnectionManager.getConnection();
 	}
 
-	private static final StringBuilder getQuery2 = new StringBuilder("SELECT * FROM BRANCH ");
 
-	private static final String addQuery = "INSERT INTO BRANCH (IFSC,NAME,ADDRESS) VALUES (?,?,?)";
-
+	
 	public List<Branch> getBranchWithId(int id) throws CustomBankException{
-		
 		String getQuery = "SELECT * FROM BRANCH WHERE ID = "+id;
-		
 		return getBranches(getQuery);
-		
-		
-		
 	}
 	
-	@Override
-	public List<Branch> getBranches(String query) throws CustomBankException {
 
-		List<Branch> branches = new ArrayList<>();
-
-		HelperUtils.nullCheck(query);
-
-
-		try (Statement statement = connection.createStatement()) {
-
-			ResultSet resultSet = statement.executeQuery(query);
-
-			while (resultSet.next()) {
-				Branch branch = mapBranch(resultSet);
-				branches.add(branch);
-			}
-
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-
-		return branches;
-
-	}
 
 	@Override
 	public List<Branch> getBranches() throws CustomBankException {
-
-		List<Branch> branches = new ArrayList<>();
-
-		try (PreparedStatement statement = connection.prepareStatement(getQuery2.toString())) {
-
-			ResultSet resultSet = statement.executeQuery();
-
-			while (resultSet.next()) {
-				Branch branch = mapBranch(resultSet);
-				branches.add(branch);
-			}
-
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-
-		return branches;
-
+		String getQuery = "SELECT * FROM BRANCH ";
+		return getBranches(getQuery);
 	}
 	
 
@@ -106,6 +61,9 @@ public class BranchDao implements IBranchDao {
 	@Override
 	public void addBranch(List<Branch> branches) throws CustomBankException {
 		HelperUtils.nullCheck(branches);
+		
+		String addQuery = "INSERT INTO BRANCH (IFSC,NAME,ADDRESS) VALUES (?,?,?)";
+
 
 		try (PreparedStatement statement = connection.prepareStatement(addQuery)) {
 			for (Branch branch : branches) {
@@ -123,6 +81,30 @@ public class BranchDao implements IBranchDao {
 		}
 
 	}
+	
+	private List<Branch> getBranches(String query) throws CustomBankException {
+
+		List<Branch> branches = new ArrayList<>();
+
+		HelperUtils.nullCheck(query);
+
+
+		try (Statement statement = connection.createStatement()) {
+
+			ResultSet resultSet = statement.executeQuery(query);
+
+			while (resultSet.next()) {
+				Branch branch = mapBranch(resultSet);
+				branches.add(branch);
+			}
+
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+		return branches;
+
+	}
 
 	private Branch mapBranch(ResultSet resultSet) throws SQLException {
 
@@ -136,14 +118,14 @@ public class BranchDao implements IBranchDao {
 	}
 
 	@Override
-	public List<Branch> getBranches(Branch branch) throws CustomBankException {
+	public List<Branch> updateBranches(Branch branch) throws CustomBankException {
 		List<Branch> branches = new ArrayList<>();
 
 		HelperUtils.nullCheck(branch);
 
-		StringBuilder getQuery1 = new StringBuilder("SELECT * FROM BRANCH WHERE ");
+		StringBuilder getQuery1 = new StringBuilder("SELECT * FROM BRANCH ");
 
-		getQuery1.append(getFieldList(branch, " AND "));
+		getQuery1.append(getFieldList(branch)).append("WHERE ID = ?");
 
 		try (PreparedStatement statement = connection.prepareStatement(getQuery1.toString())) {
 
@@ -162,25 +144,21 @@ public class BranchDao implements IBranchDao {
 		return branches;
 	}
 
-	private String getFieldList(Branch branch, String delimeter) {
+	private String getFieldList(Branch branch) {
 
 		StringBuilder queryBuilder = new StringBuilder("  ");
 
-		if (branch.getId() != 0) {
-			queryBuilder.append("ID = ? " + delimeter);
-		}
 		if (branch.getName() != null) {
-			queryBuilder.append("NAME = ? " + delimeter);
+			queryBuilder.append("NAME = ? , ");
 		}
 		if (branch.getiFSC() != null) {
-			queryBuilder.append("IFSC = ? " + delimeter);
+			queryBuilder.append("IFSC = ? , ");
 		}
-
 		if (branch.getAddress() != null) {
-			queryBuilder.append("ADDRESS = ? " + delimeter);
+			queryBuilder.append("ADDRESS = ? , ");
 		}
 
-		queryBuilder.delete(queryBuilder.length() - (delimeter.length() + 1), queryBuilder.length());
+		queryBuilder.delete(queryBuilder.length() - 2, queryBuilder.length());
 		return queryBuilder.toString();
 
 	}
@@ -189,9 +167,7 @@ public class BranchDao implements IBranchDao {
 
 		int index = 1;
 
-		if (branch.getId() != 0) {
-			statement.setObject(index++, branch.getId());
-		}
+		
 		if (branch.getName() != null) {
 			statement.setObject(index++, branch.getName());
 		}
@@ -200,6 +176,9 @@ public class BranchDao implements IBranchDao {
 		}
 		if (branch.getAddress() != null) {
 			statement.setObject(index++, branch.getAddress());
+		}
+		if (branch.getId() != 0) {
+			statement.setObject(index++, branch.getId());
 		}
 
 	}

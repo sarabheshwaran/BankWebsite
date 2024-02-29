@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uub.model.Customer;
+import uub.staticLayer.ConnectionManager;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HelperUtils;
 
@@ -80,7 +81,7 @@ public class CustomerDao implements ICustomerDao {
 	@Override
 	public List<Customer> getCustomers(int id) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM CUSTOMER JOIN USER ON CUSTOMER.ID = USER.ID WHERE CUSTOMER.ID = " + id;
+		String getQuery = "SELECT * FROM CUSTOMER JOIN USER ON CUSTOMER.ID = USER.ID WHERE CUSTOMER.ID = " + id +" AND STATUS = 'INACTIVE'";
 
 		return getCustomers(getQuery);
 
@@ -89,7 +90,7 @@ public class CustomerDao implements ICustomerDao {
 	@Override
 	public List<Customer> getCustomersWithEmail(String email) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM CUSTOMER JOIN USER ON CUSTOMER.ID = USER.ID WHERE EMAIL = '" + email+"'";
+		String getQuery = "SELECT * FROM CUSTOMER JOIN USER ON CUSTOMER.ID = USER.ID WHERE EMAIL = '" + email+"' AND STATUS = 'ACTIVE'";
 
 		return getCustomers(getQuery);
 

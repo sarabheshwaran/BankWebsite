@@ -16,7 +16,7 @@ import uub.staticLayer.CustomBankException;
 
 public class CustomerHelper {
 
-	private IAccountDao accountDao;
+	private IAccountDao accountDao ;
 	private ICustomerDao customerDao;
 	private ITransactionDao transactionDao;
 
@@ -68,13 +68,9 @@ public class CustomerHelper {
 
 	public List<Account> getAccounts(int customerId) throws CustomBankException {
 
-		List<User> users = accountDao.getUserAccounts(customerId, true);
+		return accountDao.getUserAccounts(customerId, "ACTIVE");
 
-		if (!users.isEmpty()) {
-			return users.get(0).getAccounts();
-		} else {
-			return new ArrayList<Account>();
-		}
+		
 
 	}
 

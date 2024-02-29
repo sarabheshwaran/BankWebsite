@@ -4,10 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 import uub.model.Transaction;
+import uub.staticLayer.ConnectionManager;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HelperUtils;
 
@@ -25,20 +27,23 @@ public class TransactionDao implements ITransactionDao {
 	private static final String addQuery = "INSERT INTO TRANSACTION (USER_ID, ACC_NO, TRANSACTION_ACC, TYPE, AMOUNT, OPENING_BAL, CLOSING_BAL, DESCRIPTION, TIME, STATUS) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-	
-	
 	@Override
-	public List<Transaction> getTransactions(String field, Object value) throws CustomBankException {
+	public List<Transaction> getTransactions (int accNo, long time) throws CustomBankException{
+		
+		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO ="+accNo+" AND TIME > "+ time;
+		
+		return getTransactions(getQuery);
+		
+	}
+	
+	
+	private List<Transaction> getTransactions(String query) throws CustomBankException {
 		List<Transaction> transactions = new ArrayList<>();
 
-		HelperUtils.nullCheck(value);
 
-		getQuery1.append(field).append(" = ? ;");
+		try (Statement statement = connection.createStatement()) {
 
-		try (PreparedStatement statement = connection.prepareStatement(getQuery1.toString())) {
-			statement.setObject( 1, value);
-
-			ResultSet resultSet = statement.executeQuery();
+			ResultSet resultSet = statement.executeQuery(query);
 
 			while (resultSet.next()) {
 				Transaction transaction = mapTransaction(resultSet);
@@ -236,6 +241,13 @@ private String getFieldList(Transaction transaction,String delimeter ) {
 		if (transaction.getStatus() != null) {
 		    statement.setObject(index++, transaction.getStatus());
 		}
+	}
+
+
+	@Override
+	public List<Transaction> getTransactions(String field, Object value) throws CustomBankException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

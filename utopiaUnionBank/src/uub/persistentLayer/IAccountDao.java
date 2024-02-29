@@ -1,9 +1,9 @@
 package uub.persistentLayer;
 
 import java.util.List;
+import java.util.Map;
 
 import uub.model.Account;
-import uub.model.User;
 import uub.staticLayer.CustomBankException;
 
 public interface IAccountDao {
@@ -12,13 +12,13 @@ public interface IAccountDao {
 
 	void updateAccount(Account account) throws CustomBankException;
 
-	List<User> getUserAccounts(int userId, boolean active) throws CustomBankException;
+	Map<Integer, List<Account>> getBranchAccounts(int branchId, String status) throws CustomBankException;
 
-	List<User> getBranchAccounts(int branchId, boolean active) throws CustomBankException;
+	List<Account> getUserAccounts(int userId, String status) throws CustomBankException;
 
-	List<Account> getAllAccounts(int accNo, boolean active) throws CustomBankException;
+	List<Account> getAccount(int accNo) throws CustomBankException;
 
-	List<User> getUserAccounts(int accNo) throws CustomBankException;
+	List<Account> getAllAccounts(String status) throws CustomBankException;
 	
 
 

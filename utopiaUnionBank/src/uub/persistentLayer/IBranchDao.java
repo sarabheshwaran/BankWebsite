@@ -8,7 +8,6 @@ import uub.staticLayer.CustomBankException;
 public interface IBranchDao {
 
 	
-	public List<Branch> getBranches(Branch branch) throws CustomBankException;
 	
 
 	public List<Branch> getBranches() throws CustomBankException;
@@ -17,7 +16,9 @@ public interface IBranchDao {
 
 	int getLastId() throws CustomBankException;
 
-	List<Branch> getBranches(String query) throws CustomBankException;
+
+	List<Branch> updateBranches(Branch branch) throws CustomBankException;
+
 	
 	
 }

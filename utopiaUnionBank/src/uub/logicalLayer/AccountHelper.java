@@ -30,22 +30,14 @@ public class AccountHelper {
 	}
 
 	public int getUserId(int accNo) throws CustomBankException {
-		int userId = 0;
-
-		List<User> users = accountDao.getUserAccounts(accNo);
-
-		if (!users.isEmpty()) {
-
-			userId = users.get(0).getId();
-
-		}
-
-		return userId;
+		Account account = getAccount(accNo);
+		
+		return account.getUserId();
 	}
 
 	public Account getAccount(int accNo) throws CustomBankException {
 
-		List<Account> accounts = accountDao.getAllAccounts(accNo, true);
+		List<Account> accounts = accountDao.getAccount(accNo);
 
 		if (!accounts.isEmpty()) {
 

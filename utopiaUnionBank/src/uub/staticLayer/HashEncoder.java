@@ -4,6 +4,8 @@ import java.security.NoSuchAlgorithmException;
 import java.nio.charset.StandardCharsets;
 
 public class HashEncoder {
+	
+
 
     public static String encode(String input) {
         try {

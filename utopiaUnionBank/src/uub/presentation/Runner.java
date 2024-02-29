@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import uub.logicalLayer.LoginHelper;
+import uub.staticLayer.ConnectionManager;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HelperUtils;
 
@@ -23,8 +24,9 @@ public class Runner {
 	
 	}
 	
-	public static void main(String[] args) throws  CustomBankException {
+	public static void main(String[] args)  {
 		
+		try {
 		
 		LoginHelper loginHelper = new LoginHelper();
 		
@@ -81,6 +83,7 @@ public class Runner {
 				break;
 			case 3:
 				exit = true;
+				ConnectionManager.close();
 				break;
 			default:
 			}}
@@ -100,7 +103,13 @@ public class Runner {
 
 		scanner.close();
 
+	}catch (Exception e) {
+		logger.severe("Problem in setting up files!");
+		e.printStackTrace();
 	}
+		
+	}
+	
 	
 	
 

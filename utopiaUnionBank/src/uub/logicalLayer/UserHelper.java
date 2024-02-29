@@ -1,22 +1,18 @@
 package uub.logicalLayer;
 
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import uub.model.Employee;
-import uub.model.User;
 import uub.persistentLayer.IEmployeeDao;
 import uub.persistentLayer.IUserDao;
 import uub.staticLayer.CustomBankException;
-import uub.staticLayer.HashEncoder;
 
-public class LoginHelper {
-	
+public class UserHelper {
+
 	private IUserDao userDao;
 	private IEmployeeDao employeeDao;
 
-	public LoginHelper() throws CustomBankException {
+	public UserHelper() throws CustomBankException {
 		
 		
 		try {
@@ -40,48 +36,7 @@ public class LoginHelper {
 		
 		
 	}
-
-	public int login(String userName, String passWord) throws CustomBankException {
-
-		EmployeeHelper employeeHelper = new EmployeeHelper();
-		
-		passWord = HashEncoder.encode(passWord);
-
-		
-		User user = userDao.getUserWithEmail(userName);
-
-		if (user!=null) {
-
-			if (user.getPassword().equals(passWord)) {
-
-				String userType = user.getUserType();
-
-				if (userType.equals("Customer")) {
-					return 1;
-				} else {
-					
-
-					Employee employee = employeeHelper.getProfile(userName);
-					
-					String role = employee.getRole();
-
-					if (role.equals("Admin")) {
-						return 3;
-					} else {
-						return 2;
-					}
-
-				}
-
-			} else {
-
-				return 0;
-
-			}
-		} else {
-			return -1;
-		}
-
-	}
-
+	
+	
+	
 }

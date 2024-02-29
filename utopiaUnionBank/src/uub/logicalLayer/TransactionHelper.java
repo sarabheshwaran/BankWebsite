@@ -2,6 +2,7 @@ package uub.logicalLayer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 import uub.model.Account;
 import uub.model.Transaction;
@@ -89,6 +90,17 @@ public class TransactionHelper {
 		accountHelper.updateAccount(account);
 		transactionDao.addTransaction(transaction);
 
+	}
+	
+	public List<Transaction> getNDaysTransaction(int accNo, int days) throws CustomBankException {
+		
+		long todayMillis = System.currentTimeMillis();
+		
+		long ansMillis = todayMillis - 86400000*(days);
+		
+		return transactionDao.getTransactions(accNo, ansMillis);
+		
+		
 	}
 
 }

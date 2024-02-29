@@ -3,6 +3,7 @@ package uub.logicalLayer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import uub.model.Account;
@@ -59,32 +60,61 @@ public class EmployeeHelper {
 
 	public Employee getProfile(String email) throws CustomBankException {
 
-		return employeeDao.getEmployeesWithEmail(email);
+		List<Employee> employees = employeeDao.getEmployeesWithEmail(email);
+		
+		if(!employees.isEmpty()) {
+			return employees.get(0);
+		}else {
+			throw new CustomBankException("Employee not found !");
+		}
 	}
+	
+	public Employee getEmployee(int id) throws CustomBankException {
+
+		List<Employee> employees = employeeDao.getEmployees(id);
+		
+		if(!employees.isEmpty()) {
+			return employees.get(0);
+		}else {
+			throw new CustomBankException("Employee not found !");
+		}
+	}
+	
+	
 
 	public List<Employee> getEmployees(int branchId) throws CustomBankException {
 
 		return employeeDao.getEmployeesWithBranch(branchId);
 	}
 
-	public List<User> getActiveAccounts(int branchId) throws CustomBankException {
+	public Map<Integer, List<Account>> getActiveAccounts(int branchId) throws CustomBankException {
 
-		return accountDao.getBranchAccounts(branchId, true);
+		return accountDao.getBranchAccounts(branchId, "ACTIVE");
 	}
 
-	public List<User> getInactiveAccounts(int branchId) throws CustomBankException {
+	public Map<Integer, List<Account>> getInactiveAccounts(int branchId) throws CustomBankException {
 
-		return accountDao.getBranchAccounts(branchId, false);
+		return accountDao.getBranchAccounts(branchId, "INACTIVE");
 	}
 	
-	public List<User> getActiveUsers(int branchId) throws CustomBankException {
+	public List<User> getActiveCustomers() throws CustomBankException {
 
-		return userDao.getBranchAccounts(branchId, true);
+		return userDao.getAllUsers( "Customer","ACTIVE");
+	}
+	
+	public List<User> getInactiveCustomers() throws CustomBankException {
+
+		return userDao.getAllUsers( "Customer","INACTIVE");
 	}
 
-	public List<User> getInactiveUsers(int branchId) throws CustomBankException {
+	public List<User> getActiveEmployees() throws CustomBankException {
 
-		return accountDao.getBranchAccounts(branchId, false);
+		return userDao.getAllUsers( "Employee","ACTIVE");
+	}
+	public List<User> getInactiveEmployees() throws CustomBankException {
+
+		return userDao.getAllUsers( "Employee","ACTIVE");
+		
 	}
 
 	public void activateUser(int userId) throws CustomBankException {
@@ -131,6 +161,7 @@ public class EmployeeHelper {
 
 	public int addCustomer(Customer customer) throws CustomBankException {
 
+		HelperUtils.nullCheck(customer);
 		customer.setUserType("Customer");
 		customer.setStatus("ACTIVE");
 
@@ -153,6 +184,7 @@ public class EmployeeHelper {
 	public void addEmployee(Employee employee) throws CustomBankException {
 
 
+		HelperUtils.nullCheck(employee);
 		employee.setUserType("Employee");
 		employee.setStatus("ACTIVE");
 
@@ -170,11 +202,14 @@ public class EmployeeHelper {
 		}
 
 	}
+	
+	
+	//Private methods ---
 
 	private boolean validateEmail(String email) throws CustomBankException {
 
 		HelperUtils.nullCheck(email);
-		boolean ans = Pattern.matches("^[a-zA-Z0-9]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,5}$", email);
+		boolean ans = Pattern.matches("^[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z]{2,5}$", email);
 
 		if (ans) {
 			return ans;
@@ -191,7 +226,7 @@ public class EmployeeHelper {
 		if (ans) {
 			return ans;
 		} else {
-			throw new CustomBankException("Email invalid !");
+			throw new CustomBankException("Phone no. invalid !");
 		}
 
 	}
@@ -200,15 +235,19 @@ public class EmployeeHelper {
 
 		HelperUtils.nullCheck(password);
 
-		String regex = "^(?=.*[A-Z])" + "(?=.*[a-z])" + "(?=.*\\d)"
-				+ "(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\\\"\\\\|,.<>/?])" + "(?=.*[0-9])" + ".{8,}$";
-
+		String regex = "^(?=.*[A-Z])"
+				+ "(?=.*[a-z])"
+				+ "(?=.*\\d)"
+				+ "(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\\\"\\\\|,.<>/?])"
+				+ "(?=.*[0-9])"
+				+ ".{8,}$";
+		
 		boolean ans = Pattern.matches(regex, password);
 
 		if (ans) {
 			return ans;
 		} else {
-			throw new CustomBankException("Email invalid !");
+			throw new CustomBankException("Password invalid !");
 		}
 	}
 

@@ -1,10 +1,8 @@
-package uub.persistentLayer;
+package uub.staticLayer;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
-import uub.staticLayer.CustomBankException;
 
 
 
@@ -31,6 +29,10 @@ public class ConnectionManager {
 		
 	}
 		
+	}
+	
+	public static void close() throws SQLException {
+		connection.close();
 	}
 
 }
