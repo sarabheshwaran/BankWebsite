@@ -10,7 +10,7 @@ public interface IAccountDao {
 
 	void addAccounts(List<Account> accounts) throws CustomBankException;
 
-	void updateAccount(Account account) throws CustomBankException;
+	int updateAccount(Account account) throws CustomBankException;
 
 	Map<Integer, List<Account>> getBranchAccounts(int branchId, String status) throws CustomBankException;
 
@@ -19,6 +19,8 @@ public interface IAccountDao {
 	List<Account> getAccount(int accNo) throws CustomBankException;
 
 	List<Account> getAllAccounts(String status) throws CustomBankException;
+
+	Map<Integer, List<Account>> getBranchAccounts(String status) throws CustomBankException;
 	
 
 

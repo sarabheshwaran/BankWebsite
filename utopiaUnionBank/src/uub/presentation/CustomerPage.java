@@ -8,6 +8,7 @@ import uub.model.Account;
 import uub.model.Customer;
 import uub.model.Transaction;
 import uub.staticLayer.CustomBankException;
+import uub.staticLayer.CustomerUtils;
 
 public class CustomerPage extends Runner {
 	
@@ -162,12 +163,18 @@ public class CustomerPage extends Runner {
 
 	private void displayHistory(int accNo) throws CustomBankException {
 		
-		CustomerHelper customerHelper = new CustomerHelper();
+		TransactionHelper transactionHelper = new TransactionHelper();
 		
-		List<Transaction> transactions = customerHelper.getHistory(accNo);
+		logger.info("Enter no of day ro get transaction history");
+		
+		int n = scanner.nextInt();
+		scanner.nextLine();
+		
+		List<Transaction> transactions = transactionHelper.getNDaysTransaction(accNo, n);
 		if(!transactions.isEmpty()) {
 		for(Transaction transaction : transactions) {
-			logger.info(transaction.toString());
+			
+			logger.info(CustomerUtils.formatDate(transaction.getTime())+" = " + transaction.toString());
 			
 		}}
 		else {

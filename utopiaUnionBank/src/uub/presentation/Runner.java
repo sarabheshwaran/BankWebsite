@@ -63,17 +63,7 @@ public class Runner {
 					logger.info("Welcome Employee");
 					new EmployeePage(username);
 					break;
-				case 3 :
-					logger.info("Welcome Admin");
-					new EmployeePage(username);
-					break;
-				case 0 :
-					logger.warning("Password is wrong");
-					break;
-				case -1 :
-					logger.warning("User Not Found");
-					break;
-
+				
 				default:
 					break;
 				}
@@ -90,7 +80,6 @@ public class Runner {
 			catch(CustomBankException e) {
 				logger.warning(e.getMessage());
 				
-				e.printStackTrace();
 				
 			}
 			catch(InputMismatchException e) {

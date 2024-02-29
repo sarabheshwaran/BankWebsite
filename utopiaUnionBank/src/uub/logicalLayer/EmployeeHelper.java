@@ -27,12 +27,11 @@ public class EmployeeHelper {
 	private ICustomerDao customerDao;
 
 	public EmployeeHelper() throws CustomBankException {
-		
-		
+
 		try {
 			Class<?> AccountDao = Class.forName("uub.persistentLayer.AccountDao");
 			Constructor<?> accDao = AccountDao.getDeclaredConstructor();
-			
+
 			Class<?> EmployeeDao = Class.forName("uub.persistentLayer.EmployeeDao");
 			Constructor<?> empDao = EmployeeDao.getDeclaredConstructor();
 
@@ -41,46 +40,41 @@ public class EmployeeHelper {
 
 			Class<?> CustomerDao = Class.forName("uub.persistentLayer.CustomerDao");
 			Constructor<?> cusDao = CustomerDao.getDeclaredConstructor();
-			
-			
-			accountDao =  (IAccountDao) accDao.newInstance();
+
+			accountDao = (IAccountDao) accDao.newInstance();
 			employeeDao = (IEmployeeDao) empDao.newInstance();
 			userDao = (IUserDao) useDao.newInstance();
 			customerDao = (ICustomerDao) cusDao.newInstance();
-			
-		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
-				InstantiationException | IllegalAccessException | IllegalArgumentException 
-				| InvocationTargetException e) {
-			
-			throw new CustomBankException("Error getting Data ! ",e);
+
+		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+
+			throw new CustomBankException("Error getting Data ! ", e);
 		}
-		
-		
+
 	}
 
 	public Employee getProfile(String email) throws CustomBankException {
 
 		List<Employee> employees = employeeDao.getEmployeesWithEmail(email);
-		
-		if(!employees.isEmpty()) {
+
+		if (!employees.isEmpty()) {
 			return employees.get(0);
-		}else {
+		} else {
 			throw new CustomBankException("Employee not found !");
 		}
 	}
-	
+
 	public Employee getEmployee(int id) throws CustomBankException {
 
 		List<Employee> employees = employeeDao.getEmployees(id);
-		
-		if(!employees.isEmpty()) {
+
+		if (!employees.isEmpty()) {
 			return employees.get(0);
-		}else {
+		} else {
 			throw new CustomBankException("Employee not found !");
 		}
 	}
-	
-	
 
 	public List<Employee> getEmployees(int branchId) throws CustomBankException {
 
@@ -96,25 +90,26 @@ public class EmployeeHelper {
 
 		return accountDao.getBranchAccounts(branchId, "INACTIVE");
 	}
-	
+
 	public List<User> getActiveCustomers() throws CustomBankException {
 
-		return userDao.getAllUsers( "Customer","ACTIVE");
+		return userDao.getAllUsers("Customer", "ACTIVE");
 	}
-	
+
 	public List<User> getInactiveCustomers() throws CustomBankException {
 
-		return userDao.getAllUsers( "Customer","INACTIVE");
+		return userDao.getAllUsers("Customer", "INACTIVE");
 	}
 
 	public List<User> getActiveEmployees() throws CustomBankException {
 
-		return userDao.getAllUsers( "Employee","ACTIVE");
+		return userDao.getAllUsers("Employee", "ACTIVE");
 	}
+
 	public List<User> getInactiveEmployees() throws CustomBankException {
 
-		return userDao.getAllUsers( "Employee","ACTIVE");
-		
+		return userDao.getAllUsers("Employee", "ACTIVE");
+
 	}
 
 	public void activateUser(int userId) throws CustomBankException {
@@ -143,8 +138,11 @@ public class EmployeeHelper {
 
 		account.setAccNo(accNo);
 		account.setStatus("ACTIVE");
-		accountDao.updateAccount(account);
+		int result = accountDao.updateAccount(account);
 
+		if (result == 0) {
+			throw new CustomBankException("Account not found");
+		}
 	}
 
 	public void deActivateAcc(int accNo) throws CustomBankException {
@@ -153,11 +151,13 @@ public class EmployeeHelper {
 
 		account.setAccNo(accNo);
 		account.setStatus("INACTIVE");
-		accountDao.updateAccount(account);
+		int result = accountDao.updateAccount(account);
+
+		if (result == 0) {
+			throw new CustomBankException("Account not found");
+		}
 
 	}
-	
-	
 
 	public int addCustomer(Customer customer) throws CustomBankException {
 
@@ -166,7 +166,8 @@ public class EmployeeHelper {
 		customer.setStatus("ACTIVE");
 
 		try {
-			if (validatePhone(customer.getPhone()) && validateEmail(customer.getEmail()) && validatePass(customer.getPassword())) {
+			if (validatePhone(customer.getPhone()) && validateEmail(customer.getEmail())
+					&& validatePass(customer.getPassword())) {
 
 				String password = customer.getPassword();
 				customer.setPassword(HashEncoder.encode(password));
@@ -183,13 +184,13 @@ public class EmployeeHelper {
 
 	public void addEmployee(Employee employee) throws CustomBankException {
 
-
 		HelperUtils.nullCheck(employee);
 		employee.setUserType("Employee");
 		employee.setStatus("ACTIVE");
 
 		try {
-			if (validatePhone(employee.getPhone()) && validateEmail(employee.getEmail()) && validatePass(employee.getPassword())) {
+			if (validatePhone(employee.getPhone()) && validateEmail(employee.getEmail())
+					&& validatePass(employee.getPassword())) {
 
 				String password = employee.getPassword();
 				employee.setPassword(HashEncoder.encode(password));
@@ -202,9 +203,8 @@ public class EmployeeHelper {
 		}
 
 	}
-	
-	
-	//Private methods ---
+
+	// Private methods ---
 
 	private boolean validateEmail(String email) throws CustomBankException {
 
@@ -235,13 +235,9 @@ public class EmployeeHelper {
 
 		HelperUtils.nullCheck(password);
 
-		String regex = "^(?=.*[A-Z])"
-				+ "(?=.*[a-z])"
-				+ "(?=.*\\d)"
-				+ "(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\\\"\\\\|,.<>/?])"
-				+ "(?=.*[0-9])"
-				+ ".{8,}$";
-		
+		String regex = "^(?=.*[A-Z])" + "(?=.*[a-z])" + "(?=.*\\d)"
+				+ "(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\\\"\\\\|,.<>/?])" + "(?=.*[0-9])" + ".{8,}$";
+
 		boolean ans = Pattern.matches(regex, password);
 
 		if (ans) {

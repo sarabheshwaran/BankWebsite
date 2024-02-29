@@ -11,7 +11,7 @@ public static void main(String[] args) {
 	System.out.println(formatDate(1709185654322L));
 }
 
-	static String formatDate(long millis) {
+	public static String formatDate(long millis) {
 		
 		 Instant instant = Instant.ofEpochMilli(millis);
 	     ZonedDateTime time =  ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());

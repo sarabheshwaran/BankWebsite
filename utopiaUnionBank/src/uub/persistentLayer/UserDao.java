@@ -22,46 +22,51 @@ public class UserDao implements IUserDao {
 	}
 
 	@Override
-	public User getUserWithId(int userId) throws CustomBankException {
+	public List<User> getUserWithId(int userId) throws CustomBankException {
 
 		String getQuery = "SELECT * FROM USER WHERE ID = '" + userId + "'";
-
-		List<User> users = getUsers(getQuery);
-
-		if (!users.isEmpty()) {
-			return users.get(0);
-		} else {
-			return null;
-		}
-
-	}
-
-	@Override
-	public User getUserWithEmail(String email) throws CustomBankException {
-
-		String getQuery = "SELECT * FROM USER WHERE EMAIL = '" + email + "' AND STATUS = 'ACTIVE'";
-
-		List<User> users = getUsers(getQuery);
-
-		if (!users.isEmpty()) {
-			return users.get(0);
-		} else {
-			return null;
-		}
-
-	}
-
-	@Override
-	public List<User> getAllUsers(String type , String status) throws CustomBankException {
-
-		
-		String getQuery = "SELECT * FROM USER WHERE STATUS = '" + status +"' AND USER_TYPE = '"+type+"'";
 
 		return getUsers(getQuery);
 
 	}
-	
-	
+
+	@Override
+	public List<User> getUserWithEmail(String email) throws CustomBankException {
+
+		String getQuery = "SELECT * FROM USER WHERE EMAIL = '" + email + "' AND STATUS = 'ACTIVE'";
+
+		return getUsers(getQuery);
+
+	}
+
+	@Override
+	public List<User> getAllUsers(String type, String status) throws CustomBankException {
+
+		String getQuery = "SELECT * FROM USER WHERE STATUS = '" + status + "' AND USER_TYPE = '" + type + "'";
+
+		return getUsers(getQuery);
+
+	}
+
+	@Override
+	public void updateUser(User user) throws CustomBankException {
+
+		HelperUtils.nullCheck(user);
+
+		StringBuilder updateQuery = new StringBuilder("UPDATE USER SET  ");
+
+		updateQuery.append(getFieldList(user)).append("WHERE ID = ?");
+
+		try (PreparedStatement statement = connection.prepareStatement(updateQuery.toString())) {
+
+			setValues(statement, user);
+			statement.executeUpdate();
+
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+	}
 
 	private List<User> getUsers(String query) throws CustomBankException {
 
@@ -69,7 +74,6 @@ public class UserDao implements IUserDao {
 
 		try (Statement statement = connection.createStatement()) {
 
-			
 			ResultSet resultSet = statement.executeQuery(query);
 
 			while (resultSet.next()) {
@@ -83,26 +87,6 @@ public class UserDao implements IUserDao {
 		}
 
 		return users;
-
-	}
-
-	@Override
-	public void updateUser(User user) throws CustomBankException {
-
-		HelperUtils.nullCheck(user);
-
-		StringBuilder updateQuery = new StringBuilder("UPDATE USER SET  ");
-
-		updateQuery.append(getFieldList(user)).append("WHERE ID = ");
-
-		try (PreparedStatement statement = connection.prepareStatement(updateQuery.toString())) {
-
-			setValues(statement, user);
-			statement.executeUpdate();
-
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
 
 	}
 
@@ -133,9 +117,6 @@ public class UserDao implements IUserDao {
 		}
 		if (user.getStatus() != null) {
 			queryBuilder.append("STATUS = ? , ");
-		}
-		if (user.getId() != 0) {
-			queryBuilder.append("USER.ID = ? , ");
 		}
 
 		queryBuilder.delete(queryBuilder.length() - 2, queryBuilder.length());

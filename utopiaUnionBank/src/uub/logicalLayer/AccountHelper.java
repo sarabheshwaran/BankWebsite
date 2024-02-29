@@ -61,7 +61,11 @@ public class AccountHelper {
 
 		HelperUtils.nullCheck(account);
 
-		accountDao.updateAccount(account);
+		int result = accountDao.updateAccount(account);
+		
+		if(result == 0) {
+			throw new CustomBankException("Account not found !");
+		}
 
 	}
 

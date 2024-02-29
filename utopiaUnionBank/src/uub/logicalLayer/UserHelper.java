@@ -2,7 +2,9 @@ package uub.logicalLayer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
+import uub.model.User;
 import uub.persistentLayer.IEmployeeDao;
 import uub.persistentLayer.IUserDao;
 import uub.staticLayer.CustomBankException;
@@ -34,6 +36,18 @@ public class UserHelper {
 			throw new CustomBankException("Error getting Data ! ",e);
 		}
 		
+		
+	}
+	
+	public User getUser(String username) throws CustomBankException{
+		
+		List<User> users = userDao.getUserWithEmail(username);
+		
+		if(!users.isEmpty()) {
+			return users.get(0);
+		}else {
+			throw new CustomBankException("User Not Found !");
+		}
 		
 	}
 	

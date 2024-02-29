@@ -38,16 +38,18 @@ public class AccountDao implements IAccountDao {
 	@Override
 	public Map<Integer, List<Account>> getBranchAccounts(int branchId, String status) throws CustomBankException {
 
-		String branch;
+		String getQuery = "SELECT * FROM ACCOUNTS JOIN USER ON USER.ID = ACCOUNTS.USER_ID WHERE  ACCOUNTS.STATUS = '"
+				+ status + "' AND BRANCH_ID = " + branchId;
 
-		if (branchId != 0) {
-			branch = "AND BRANCH_ID = " + branchId;
-		} else {
-			branch = "";
-		}
+		return getAccountsWithUser(getQuery);
+
+	}
+
+	@Override
+	public Map<Integer, List<Account>> getBranchAccounts(String status) throws CustomBankException {
 
 		String getQuery = "SELECT * FROM ACCOUNTS JOIN USER ON USER.ID = ACCOUNTS.USER_ID WHERE  ACCOUNTS.STATUS = '"
-				+ status + "'" + branch;
+				+ status + "'";
 
 		return getAccountsWithUser(getQuery);
 
@@ -95,7 +97,7 @@ public class AccountDao implements IAccountDao {
 	}
 
 	@Override
-	public void updateAccount(Account account) throws CustomBankException {
+	public int updateAccount(Account account) throws CustomBankException {
 
 		HelperUtils.nullCheck(account);
 
@@ -107,7 +109,7 @@ public class AccountDao implements IAccountDao {
 
 			setValues(statement, account);
 
-			statement.executeUpdate();
+			return statement.executeUpdate();
 
 		} catch (SQLException e) {
 			throw new CustomBankException(e.getMessage());
