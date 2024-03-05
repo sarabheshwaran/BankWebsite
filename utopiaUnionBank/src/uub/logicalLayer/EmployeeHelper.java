@@ -4,7 +4,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import uub.model.Account;
 import uub.model.Customer;
@@ -21,10 +20,10 @@ import uub.staticLayer.HelperUtils;
 
 public class EmployeeHelper {
 
-	private IEmployeeDao employeeDao;
-	private IAccountDao accountDao;
-	private IUserDao userDao;
-	private ICustomerDao customerDao;
+	protected IEmployeeDao employeeDao;
+	protected IAccountDao accountDao;
+	protected IUserDao userDao;
+	protected ICustomerDao customerDao;
 
 	public EmployeeHelper() throws CustomBankException {
 
@@ -55,6 +54,8 @@ public class EmployeeHelper {
 	}
 
 	public Employee getProfile(String email) throws CustomBankException {
+		
+		HelperUtils.nullCheck(email);
 
 		List<Employee> employees = employeeDao.getEmployeesWithEmail(email);
 
@@ -66,6 +67,7 @@ public class EmployeeHelper {
 	}
 
 	public Employee getEmployee(int id) throws CustomBankException {
+		
 
 		List<Employee> employees = employeeDao.getEmployees(id);
 
@@ -76,10 +78,6 @@ public class EmployeeHelper {
 		}
 	}
 
-	public List<Employee> getEmployees(int branchId) throws CustomBankException {
-
-		return employeeDao.getEmployeesWithBranch(branchId);
-	}
 
 	public Map<Integer, List<Account>> getActiveAccounts(int branchId) throws CustomBankException {
 
@@ -101,36 +99,7 @@ public class EmployeeHelper {
 		return userDao.getAllUsers("Customer", "INACTIVE");
 	}
 
-	public List<User> getActiveEmployees() throws CustomBankException {
 
-		return userDao.getAllUsers("Employee", "ACTIVE");
-	}
-
-	public List<User> getInactiveEmployees() throws CustomBankException {
-
-		return userDao.getAllUsers("Employee", "ACTIVE");
-
-	}
-
-	public void activateUser(int userId) throws CustomBankException {
-
-		User user = new User();
-
-		user.setId(userId);
-		user.setStatus("ACTIVE");
-		userDao.updateUser(user);
-
-	}
-
-	public void deActivateUser(int accNo) throws CustomBankException {
-
-		Account account = new Account();
-
-		account.setAccNo(accNo);
-		account.setStatus("INACTIVE");
-		accountDao.updateAccount(account);
-
-	}
 
 	public void activateAcc(int accNo) throws CustomBankException {
 
@@ -164,10 +133,11 @@ public class EmployeeHelper {
 		HelperUtils.nullCheck(customer);
 		customer.setUserType("Customer");
 		customer.setStatus("ACTIVE");
+		Validator validator = new Validator();
 
 		try {
-			if (validatePhone(customer.getPhone()) && validateEmail(customer.getEmail())
-					&& validatePass(customer.getPassword())) {
+			if (validator.validatePhone(customer.getPhone()) && validator.validateEmail(customer.getEmail())
+					&& validator.validatePass(customer.getPassword())) {
 
 				String password = customer.getPassword();
 				customer.setPassword(HashEncoder.encode(password));
@@ -182,69 +152,7 @@ public class EmployeeHelper {
 
 	}
 
-	public void addEmployee(Employee employee) throws CustomBankException {
 
-		HelperUtils.nullCheck(employee);
-		employee.setUserType("Employee");
-		employee.setStatus("ACTIVE");
 
-		try {
-			if (validatePhone(employee.getPhone()) && validateEmail(employee.getEmail())
-					&& validatePass(employee.getPassword())) {
-
-				String password = employee.getPassword();
-				employee.setPassword(HashEncoder.encode(password));
-
-				employeeDao.addEmployee(List.of(employee));
-			}
-		} catch (Exception e) {
-			throw new CustomBankException("Signup failed : " + e.getMessage());
-
-		}
-
-	}
-
-	// Private methods ---
-
-	private boolean validateEmail(String email) throws CustomBankException {
-
-		HelperUtils.nullCheck(email);
-		boolean ans = Pattern.matches("^[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z]{2,5}$", email);
-
-		if (ans) {
-			return ans;
-		} else {
-			throw new CustomBankException("Email invalid !");
-		}
-	}
-
-	private boolean validatePhone(String phoneNo) throws CustomBankException {
-
-		HelperUtils.nullCheck(phoneNo);
-		boolean ans = Pattern.matches("[789]{1}\\d{9}", phoneNo);
-
-		if (ans) {
-			return ans;
-		} else {
-			throw new CustomBankException("Phone no. invalid !");
-		}
-
-	}
-
-	private boolean validatePass(String password) throws CustomBankException {
-
-		HelperUtils.nullCheck(password);
-
-		String regex = "^(?=.*[A-Z])" + "(?=.*[a-z])" + "(?=.*\\d)"
-				+ "(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\\\"\\\\|,.<>/?])" + "(?=.*[0-9])" + ".{8,}$";
-
-		boolean ans = Pattern.matches(regex, password);
-
-		if (ans) {
-			return ans;
-		} else {
-			throw new CustomBankException("Password invalid !");
-		}
-	}
 
 }

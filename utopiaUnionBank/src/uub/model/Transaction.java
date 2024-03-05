@@ -1,5 +1,6 @@
 package uub.model;
 
+import uub.staticLayer.HelperUtils;
 
 public class Transaction {
 
@@ -8,20 +9,15 @@ public class Transaction {
 	private int accNo;
 	private int transactionAcc;
 	private String type;
-	private double amount;
-	private double openingBal;
-	private double closingBal;
+	private double amount = -1;
+	private double openingBal = -1;
+	private double closingBal = -1;
 	private String desc;
 	private long time;
 	private String status;
 	
 	
-	
-	public Transaction() {
-		
-		this.openingBal = -1;
-		this.closingBal = -1;
-	}
+
 
 	@Override
 	public String toString() {
@@ -64,19 +60,19 @@ public class Transaction {
 		return amount;
 	}
 	public void setAmount(double amount) {
-		this.amount = amount;
+		this.amount = HelperUtils.doubleFormat(amount);
 	}
 	public double getOpeningBal() {
 		return openingBal;
 	}
 	public void setOpeningBal(double openingBal) {
-		this.openingBal = openingBal;
+		this.openingBal = HelperUtils.doubleFormat(openingBal);
 	}
 	public double getClosingBal() {
 		return closingBal;
 	}
 	public void setClosingBal(double closingBal) {
-		this.closingBal = closingBal;
+		this.closingBal = HelperUtils.doubleFormat(closingBal);
 	}
 	public String getDesc() {
 		return desc;

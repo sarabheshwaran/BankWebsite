@@ -15,33 +15,35 @@ import uub.staticLayer.HelperUtils;
 
 public class TransactionDao implements ITransactionDao {
 
-	private Connection connection;
-
-	public TransactionDao()throws CustomBankException {
-		connection = ConnectionManager.getConnection();
-	}
-
-	private static final StringBuilder getQuery1 = new StringBuilder("SELECT * FROM TRANSACTION WHERE ");
-
-	
-	private static final String addQuery = "INSERT INTO TRANSACTION (USER_ID, ACC_NO, TRANSACTION_ACC, TYPE, AMOUNT, OPENING_BAL, CLOSING_BAL, DESCRIPTION, TIME, STATUS) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	private static final String addQuery = "INSERT INTO TRANSACTION (ID, USER_ID, ACC_NO, TRANSACTION_ACC, TYPE, AMOUNT, OPENING_BAL, CLOSING_BAL, DESCRIPTION, TIME, STATUS) "
+			+ "VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 	@Override
-	public List<Transaction> getTransactions (int accNo, long time) throws CustomBankException{
-		
-		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO ="+accNo+" AND TIME > "+ time;
-		
+	public List<Transaction> getTransactions(int accNo, long from, int limit, int offSet) throws CustomBankException {
+
+		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO =" + accNo + " AND TIME > " + from + " LIMIT  "
+				+ limit + " OFFSET " + offSet;
+
 		return getTransactions(getQuery);
-		
+
 	}
-	
-	
+
+	@Override
+	public List<Transaction> getTransactionsOfUser(int userId, long from, int limit, int offSet)
+			throws CustomBankException {
+
+		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO =" + userId + " AND TIME > " + from + " LIMIT  "
+				+ limit + " OFFSET " + offSet;
+
+		return getTransactions(getQuery);
+
+	}
+
 	private List<Transaction> getTransactions(String query) throws CustomBankException {
 		List<Transaction> transactions = new ArrayList<>();
 
-
-		try (Statement statement = connection.createStatement()) {
+		try (Connection connection = ConnectionManager.getConnection();
+				Statement statement = connection.createStatement();) {
 
 			ResultSet resultSet = statement.executeQuery(query);
 
@@ -56,87 +58,57 @@ public class TransactionDao implements ITransactionDao {
 
 		return transactions;
 	}
-	
+
 	@Override
-	public List<Transaction> getTransactions(Transaction transaction) throws CustomBankException {
-		List<Transaction> transactions = new ArrayList<>();
+	public void addTransaction(Transaction transaction) throws CustomBankException {
 
 		HelperUtils.nullCheck(transaction);
 
-		StringBuilder getQuery = new StringBuilder("SELECT * FROM TRANSACTION WHERE");
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(addQuery)) {
+			statement.setObject(1, transaction.getId());
+			statement.setObject(2, transaction.getUserId());
+			statement.setObject(3, transaction.getAccNo());
+			statement.setObject(4, transaction.getTransactionAcc());
+			statement.setObject(5, transaction.getType());
+			statement.setObject(6, transaction.getAmount());
+			statement.setObject(7, transaction.getOpeningBal());
+			statement.setObject(8, transaction.getClosingBal());
+			statement.setObject(9, transaction.getDesc());
+			statement.setObject(10, transaction.getTime());
+			statement.setObject(11, transaction.getStatus());
 
-		getQuery.append(getFieldList(transaction, " AND "));
-		
+			System.out.println(statement);
+			statement.executeUpdate();
 
-		try (PreparedStatement statement = connection.prepareStatement(getQuery.toString())) {
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+	}
+
+	@Override
+	public int getLastId() throws CustomBankException {
+
+		int lastId = -1;
+
+		String query = "SELECT MAX(ID) AS max_id FROM TRANSACTION";
+
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(query)) {
 			
-			setValues(statement, transaction);
-
 			ResultSet resultSet = statement.executeQuery();
 
-			while (resultSet.next()) {
-				transaction = mapTransaction(resultSet);
-				transactions.add(transaction);
+			if (resultSet.next()) {
+				lastId = resultSet.getInt("max_id");
 			}
 
 		} catch (SQLException e) {
 			throw new CustomBankException(e.getMessage());
 		}
 
-		return transactions;
+		return lastId;
 	}
 
-	
-	
-	@Override
-	public void addTransaction(Transaction transaction) throws CustomBankException {
-		
-		 HelperUtils.nullCheck(transaction);
-
-		   
-		    try (PreparedStatement statement = connection.prepareStatement(addQuery)) {
-		    	statement.setObject( 1, transaction.getUserId());
-		    	statement.setObject( 2, transaction.getAccNo());
-		    	statement.setObject( 3, transaction.getTransactionAcc());
-		    	statement.setObject( 4, transaction.getType());
-		    	statement.setObject( 5, transaction.getAmount());
-		    	statement.setObject( 6, transaction.getOpeningBal());
-		    	statement.setObject( 7, transaction.getClosingBal());
-		    	statement.setObject( 8, transaction.getDesc());
-		    	statement.setObject( 9, transaction.getTime());
-		    	statement.setObject( 10, transaction.getStatus());
-
-
-		        statement.executeUpdate();
-
-
-		    } catch (SQLException e) {
-				throw new CustomBankException(e.getMessage());
-			}
-	}
-
-
-	@Override
-	public int getLastId() throws CustomBankException {
-		
-		int lastId = -1; 
-
-	    String query = "SELECT MAX(ID) AS max_id FROM TRANSACTION";
-
-	    try (PreparedStatement statement = connection.prepareStatement(query)) {
-	        ResultSet resultSet = statement.executeQuery();
-
-	        if (resultSet.next()) {
-	            lastId = resultSet.getInt("max_id");
-	        }
-
-	    } catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-
-	    return lastId;
-	}
-	
 	private Transaction mapTransaction(ResultSet resultSet) throws SQLException {
 		Transaction transaction = new Transaction();
 
@@ -155,107 +127,4 @@ public class TransactionDao implements ITransactionDao {
 		return transaction;
 	}
 
-
-private String getFieldList(Transaction transaction,String delimeter ) {
-		
-		
-		StringBuilder queryBuilder = new StringBuilder("  ");
-        
-		if (transaction.getId() != 0) {
-		    queryBuilder.append("CUSTOMER.ID = ? " + delimeter );
-		}
-		if (transaction.getUserId() != 0) {
-		    queryBuilder.append("NAME = ? " + delimeter );
-		}
-		if (transaction.getAccNo() != 0) {
-		    queryBuilder.append("ACC_NO = ? " + delimeter );
-		}
-		if (transaction.getTransactionAcc() != 0) {
-		    queryBuilder.append("PHONE = ? " + delimeter );
-		}
-		if (transaction.getType() != null) {
-		    queryBuilder.append("DOB = ? " + delimeter );
-		}
-		if (transaction.getAmount() != 0) {
-		    queryBuilder.append("GENDER = ? " + delimeter );
-		}
-		if (transaction.getOpeningBal() != -1) {
-		    queryBuilder.append("PASSWORD = ?" + delimeter );
-		}
-		if (transaction.getClosingBal() != -1) {
-		    queryBuilder.append("USER_TYPE = ? " + delimeter );
-		}
-		if (transaction.getStatus() != null) {
-		    queryBuilder.append("STATUS = ? " + delimeter );
-		}
-		if (transaction.getDesc() != null) {
-		    queryBuilder.append("AADHAR_NO = ? " + delimeter );
-		}
-		if (transaction.getTime() != 0) {
-		    queryBuilder.append("PAN = ? " + delimeter );
-		}
-
-		 queryBuilder.delete(queryBuilder.length() - (delimeter.length() + 1), queryBuilder.length());
-		 return queryBuilder.toString();
-		
-	}
-	
-	
-	private void setValues(PreparedStatement statement, Transaction transaction) throws SQLException {
-		
-		int index = 1;
-		
-		if (transaction.getId() != 0) {
-		    statement.setObject(index++, transaction.getId());
-		}
-		if (transaction.getUserId() != 0) {
-		    statement.setObject(index++, transaction.getUserId());
-		}
-		if (transaction.getAccNo() != 0) {
-		    statement.setObject(index++, transaction.getAccNo());
-		}
-		if (transaction.getTransactionAcc() != 0) {
-		    statement.setObject(index++, transaction.getTransactionAcc());
-		}
-		if (transaction.getType() != null) {
-		    statement.setObject(index++, transaction.getType());
-		}
-		if (transaction.getAmount() != 0) {
-		    statement.setObject(index++, transaction.getAmount());
-		}
-		if (transaction.getOpeningBal() != -1) {
-		    statement.setObject(index++, transaction.getOpeningBal());
-		}
-		if (transaction.getClosingBal() != -1) {
-		    statement.setObject(index++, transaction.getClosingBal());
-		}
-		if (transaction.getStatus() != null) {
-		    statement.setObject(index++, transaction.getStatus());
-		}
-		if (transaction.getDesc() != null) {
-		    statement.setObject(index++, transaction.getDesc());
-		}
-		if (transaction.getTime() != 0) {
-		    statement.setObject(index++, transaction.getTime());
-		}
-		if (transaction.getStatus() != null) {
-		    statement.setObject(index++, transaction.getStatus());
-		}
-	}
-
-
-	@Override
-	public List<Transaction> getTransactions(String field, Object value) throws CustomBankException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	
-
-
-
-
-
-
-	
 }

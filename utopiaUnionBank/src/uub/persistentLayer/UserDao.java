@@ -15,12 +15,6 @@ import uub.staticLayer.HelperUtils;
 
 public class UserDao implements IUserDao {
 
-	private Connection connection;
-
-	public UserDao() throws CustomBankException {
-		connection = ConnectionManager.getConnection();
-	}
-
 	@Override
 	public List<User> getUserWithId(int userId) throws CustomBankException {
 
@@ -33,8 +27,8 @@ public class UserDao implements IUserDao {
 	@Override
 	public List<User> getUserWithEmail(String email) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM USER WHERE EMAIL = '" + email + "' AND STATUS = 'ACTIVE'";
-
+		String getQuery = "SELECT * FROM USER WHERE EMAIL = '" + email + "' AND STATUS = 'ACTIVE' ;";
+		
 		return getUsers(getQuery);
 
 	}
@@ -57,7 +51,8 @@ public class UserDao implements IUserDao {
 
 		updateQuery.append(getFieldList(user)).append("WHERE ID = ?");
 
-		try (PreparedStatement statement = connection.prepareStatement(updateQuery.toString())) {
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(updateQuery.toString())) {
 
 			setValues(statement, user);
 			statement.executeUpdate();
@@ -72,8 +67,8 @@ public class UserDao implements IUserDao {
 
 		List<User> users = new ArrayList<User>();
 
-		try (Statement statement = connection.createStatement()) {
-
+		try (Connection connection = ConnectionManager.getConnection();
+				Statement statement = connection.createStatement()) {
 			ResultSet resultSet = statement.executeQuery(query);
 
 			while (resultSet.next()) {

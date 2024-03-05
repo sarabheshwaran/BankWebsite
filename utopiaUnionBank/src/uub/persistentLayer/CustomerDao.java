@@ -15,12 +15,6 @@ import uub.staticLayer.HelperUtils;
 
 public class CustomerDao implements ICustomerDao {
 
-	private Connection connection;
-
-	public CustomerDao() throws CustomBankException {
-		connection = ConnectionManager.getConnection();
-	}
-
 	private static final String addQuery1 = "INSERT INTO USER (NAME,EMAIL,PHONE,DOB,GENDER,PASSWORD,USER_TYPE,STATUS) VALUES (?,?,?,?,?,?,?,?)";
 	private static final String addQuery2 = "INSERT INTO CUSTOMER VALUES (?,?,?,?)";
 
@@ -29,7 +23,10 @@ public class CustomerDao implements ICustomerDao {
 	@Override
 	public int[] addCustomer(List<Customer> customers) throws CustomBankException {
 
-		try (PreparedStatement statement = connection.prepareStatement(addQuery1,
+		Connection connection = ConnectionManager.getConnection();
+		
+		try (
+				PreparedStatement statement = connection.prepareStatement(addQuery1,
 				PreparedStatement.RETURN_GENERATED_KEYS);
 				PreparedStatement statement2 = connection.prepareStatement(addQuery2)) {
 
@@ -74,7 +71,14 @@ public class CustomerDao implements ICustomerDao {
 				throw new CustomBankException(e.getMessage());
 			}
 			throw new CustomBankException(e.getMessage());
+		}finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				throw new CustomBankException(e.getMessage());
+			}
 		}
+	
 
 	}
 
@@ -106,7 +110,8 @@ public class CustomerDao implements ICustomerDao {
 
 		updateQuery.append(getFieldList(customer)).append("WHERE ID = ");
 
-		try (PreparedStatement statement = connection.prepareStatement(updateQuery.toString())) {
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(updateQuery.toString())) {
 
 			setValues(statement, customer);
 			statement.executeUpdate();
@@ -121,7 +126,8 @@ public class CustomerDao implements ICustomerDao {
 
 		List<Customer> customers = new ArrayList<Customer>();
 
-		try (Statement statement = connection.createStatement()) {
+		try (Connection connection = ConnectionManager.getConnection();
+				Statement statement = connection.createStatement()) {
 
 			ResultSet resultSet = statement.executeQuery(query);
 			while (resultSet.next()) {

@@ -21,51 +21,48 @@ public class BranchDao implements IBranchDao {
 		connection = ConnectionManager.getConnection();
 	}
 
-
-	
-	public List<Branch> getBranchWithId(int id) throws CustomBankException{
-		String getQuery = "SELECT * FROM BRANCH WHERE ID = "+id;
+	public List<Branch> getBranchWithId(int id) throws CustomBankException {
+		String getQuery = "SELECT * FROM BRANCH WHERE ID = " + id;
 		return getBranches(getQuery);
 	}
-	
-
 
 	@Override
 	public List<Branch> getBranches() throws CustomBankException {
 		String getQuery = "SELECT * FROM BRANCH ";
 		return getBranches(getQuery);
 	}
-	
 
 	@Override
 	public int getLastId() throws CustomBankException {
-		
-		int lastId = -1; 
 
-		 String query = "SELECT MAX(ID) AS max_id FROM BRANCH";
-		 
-	    try (PreparedStatement statement = connection.prepareStatement(query)) {
-	        ResultSet resultSet = statement.executeQuery();
+		int lastId = -1;
 
-	        if (resultSet.next()) {
-	            lastId = resultSet.getInt("max_id");
-	        }
+		String query = "SELECT MAX(ID) AS max_id FROM BRANCH";
 
-	    } catch (SQLException e) {
+		try (PreparedStatement statement = connection.prepareStatement(query)) {
+			ResultSet resultSet = statement.executeQuery();
+
+			if (resultSet.next()) {
+				lastId = resultSet.getInt("max_id");
+			}
+
+		} catch (SQLException e) {
 			throw new CustomBankException(e.getMessage());
 		}
 
-	    return lastId;
+		return lastId;
 	}
 
 	@Override
 	public void addBranch(List<Branch> branches) throws CustomBankException {
 		HelperUtils.nullCheck(branches);
-		
+
 		String addQuery = "INSERT INTO BRANCH (IFSC,NAME,ADDRESS) VALUES (?,?,?)";
 
-
-		try (PreparedStatement statement = connection.prepareStatement(addQuery)) {
+		try (Connection connection = ConnectionManager.getConnection();
+			PreparedStatement statement = connection.prepareStatement(addQuery);) {
+			
+			
 			for (Branch branch : branches) {
 
 				HelperUtils.setParameter(statement, 1, branch.getiFSC());
@@ -81,15 +78,15 @@ public class BranchDao implements IBranchDao {
 		}
 
 	}
-	
+
 	private List<Branch> getBranches(String query) throws CustomBankException {
 
 		List<Branch> branches = new ArrayList<>();
 
 		HelperUtils.nullCheck(query);
 
-
-		try (Statement statement = connection.createStatement()) {
+		try (Connection connection = ConnectionManager.getConnection();
+				Statement statement = connection.createStatement();) {
 
 			ResultSet resultSet = statement.executeQuery(query);
 
@@ -127,7 +124,8 @@ public class BranchDao implements IBranchDao {
 
 		getQuery1.append(getFieldList(branch)).append("WHERE ID = ?");
 
-		try (PreparedStatement statement = connection.prepareStatement(getQuery1.toString())) {
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(getQuery1.toString())) {
 
 			setValues(statement, branch);
 			ResultSet resultSet = statement.executeQuery();
@@ -167,7 +165,6 @@ public class BranchDao implements IBranchDao {
 
 		int index = 1;
 
-		
 		if (branch.getName() != null) {
 			statement.setObject(index++, branch.getName());
 		}
@@ -182,6 +179,5 @@ public class BranchDao implements IBranchDao {
 		}
 
 	}
-
 
 }

@@ -7,14 +7,17 @@ import uub.staticLayer.CustomBankException;
 
 public interface ITransactionDao {
 
-	public List<Transaction> getTransactions(String field, Object value) throws CustomBankException;
 	
 	public void addTransaction(Transaction transaction) throws CustomBankException;
 	
 	public int getLastId() throws CustomBankException;
 
-	List<Transaction> getTransactions(Transaction transaction) throws CustomBankException;
 
-	List<Transaction> getTransactions(int accNo, long time) throws CustomBankException;
+
+
+
+	List<Transaction> getTransactions(int accNo, long from, int offSet, int limit) throws CustomBankException;
+
+	List<Transaction> getTransactionsOfUser(int userId, long from, int offSet, int limit) throws CustomBankException;
 	
 }

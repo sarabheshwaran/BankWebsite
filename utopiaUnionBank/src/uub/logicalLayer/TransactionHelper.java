@@ -15,7 +15,7 @@ public class TransactionHelper {
 	public TransactionHelper() throws CustomBankException {
 
 		try {
-			
+
 			Class<?> TransactionDao = Class.forName("uub.persistentLayer.TransactionDao");
 			Constructor<?> transDao = TransactionDao.getDeclaredConstructor();
 
@@ -23,84 +23,105 @@ public class TransactionHelper {
 
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
 				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			
+
 			throw new CustomBankException("Error getting Data ! ", e);
 		}
 
 	}
+	
 	
 
 	public void performTransaction(Transaction transaction) throws CustomBankException {
 
 		AccountHelper accountHelper = new AccountHelper();
 
+		int id = transactionDao.getLastId();
+
+		transaction.setId(id + 1);
+
 		transaction.setTime(System.currentTimeMillis());
 
-		int accountNo = transaction.getAccNo();
+		int accNo = transaction.getAccNo();
+		int rAccNo = transaction.getTransactionAcc();
 
-		transaction.setOpeningBal(accountHelper.getBalance(accountNo));
-		transaction.setClosingBal(accountHelper.getBalance(accountNo) + transaction.getAmount());
+		transaction.setOpeningBal(accountHelper.getBalance(accNo));
+		transaction.setClosingBal(accountHelper.getBalance(accNo) + transaction.getAmount());
 
-		Account account;
+		Account account = null;
+		Transaction rTransaction = null;
 
 		try {
-			account = accountHelper.updateBalance(accountNo, 0 - transaction.getAmount());
+			account = accountHelper.debit(accNo, transaction.getAmount());
+
+			if (rAccNo != 0) {
+				rTransaction = performRecepientTransaction(transaction);
+
+			}
+
 			accountHelper.updateAccount(account);
 
 			transaction.setStatus("PASS");
-		} catch (Exception e) {
+		} catch (CustomBankException e) {
 
 			transaction.setStatus("FAIL");
-			throw new CustomBankException("Transaction Failed ! Cause : " + e.getMessage());
+			transaction.setClosingBal(transaction.getOpeningBal());
+			throw new CustomBankException("Transaction Failed ! ", e);
 
 		} finally {
-			try {
-				transactionDao.addTransaction(transaction);
-				if (accountHelper.getUserId(transaction.getTransactionAcc()) != 0) {
-					performRecepientTransaction(transaction);
-				}
-			} catch (Exception e) {
 
-				throw new CustomBankException("Transaction Failed ! Cause : " + e.getMessage());
+			transactionDao.addTransaction(transaction);
+			if (rTransaction != null) {
+				transactionDao.addTransaction(rTransaction);
 			}
 
 		}
 
 	}
 
-	private void performRecepientTransaction(Transaction transaction) throws CustomBankException {
+	private Transaction performRecepientTransaction(Transaction transaction) throws CustomBankException {
 
 		AccountHelper accountHelper = new AccountHelper();
 
+		Transaction rTransaction = new Transaction();
+
 		int accNo = transaction.getTransactionAcc();
-		int userId = accountHelper.getUserId(transaction.getTransactionAcc());
+		int userId = accountHelper.getUserId(accNo);
 		double balance = accountHelper.getBalance(accNo);
+		double amount = transaction.getAmount();
+		int rAccNo = transaction.getAccNo();
 
-		transaction.setUserId(userId);
-		transaction.setTransactionAcc(transaction.getAccNo());
-		transaction.setAccNo(accNo);
-		transaction.setAmount(0 - transaction.getAmount());
-		transaction.setTime(System.currentTimeMillis());
-		transaction.setStatus("PASS");
-
-		transaction.setOpeningBal(balance);
-		transaction.setClosingBal(balance + transaction.getAmount());
-
-		Account account = accountHelper.updateBalance(accNo, 0 - transaction.getAmount());
+		Account account = accountHelper.credit(accNo, amount);
 		accountHelper.updateAccount(account);
-		transactionDao.addTransaction(transaction);
+
+		if (rAccNo == accNo) {
+
+			throw new CustomBankException("Invalid Receiver !");
+		}
+
+		rTransaction.setId(transaction.getId());
+		rTransaction.setUserId(userId);
+		rTransaction.setTransactionAcc(rTransaction.getAccNo());
+		rTransaction.setAccNo(accNo);
+		rTransaction.setTransactionAcc(rAccNo);
+		rTransaction.setType(transaction.getType());
+		rTransaction.setAmount(0 - amount);
+		rTransaction.setTime(System.currentTimeMillis());
+		rTransaction.setStatus("PASS");
+
+		rTransaction.setOpeningBal(balance);
+		rTransaction.setClosingBal(balance + rTransaction.getAmount());
+
+		rTransaction.setDesc(transaction.getDesc());
+
+
+		return rTransaction;
 
 	}
-	
-	public List<Transaction> getNDaysTransaction(int accNo, int days) throws CustomBankException {
-		
-		long todayMillis = System.currentTimeMillis();
-		
-		long ansMillis = todayMillis - 86400000*(days);
-		
-		return transactionDao.getTransactions(accNo, ansMillis);
-		
-		
+
+	public List<Transaction> getTransactions(int accNo, long from, int limit, int offSet) throws CustomBankException {
+
+		return transactionDao.getTransactions(accNo, from, limit, offSet);
+
 	}
 
 }

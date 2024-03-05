@@ -15,7 +15,5 @@ public interface IUserDao {
 
 	List<User> getUserWithEmail(String email) throws CustomBankException;
 
-
-
 	List<User> getAllUsers(String type, String status) throws CustomBankException;
 }

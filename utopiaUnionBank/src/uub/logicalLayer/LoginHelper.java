@@ -9,20 +9,31 @@ import uub.staticLayer.HashEncoder;
 public class LoginHelper {
 	
 
+	public void passwordValidate(String givenPassword, String userPassword) throws CustomBankException {
+		
+		givenPassword = HashEncoder.encode(givenPassword);
+		
+		if(givenPassword != userPassword) {
+			
+			throw new CustomBankException("Wrong password");
+		}
+		
+	}
+	
+
 	public int login(String userName, String passWord) throws CustomBankException {
 
 		
 		UserHelper userHelper = new UserHelper();
 		
-		passWord = HashEncoder.encode(passWord);
 
 		
 		User user = userHelper.getUser(userName);
 
 	
-
-			if (user.getPassword().equals(passWord)) {
-
+		passwordValidate(passWord, user.getPassword());
+			
+		
 				String userType = user.getUserType();
 
 				if (userType.equals("Customer")) {
@@ -35,13 +46,9 @@ public class LoginHelper {
 
 				}
 
-			} else {
-
-				throw new CustomBankException("Wrong Password !");
-
 			}
 		
 
 	}
 
-}
+

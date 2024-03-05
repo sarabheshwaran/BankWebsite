@@ -16,9 +16,7 @@ public interface IBranchDao {
 
 	int getLastId() throws CustomBankException;
 
-
 	List<Branch> updateBranches(Branch branch) throws CustomBankException;
-
 	
-	
+		
 }

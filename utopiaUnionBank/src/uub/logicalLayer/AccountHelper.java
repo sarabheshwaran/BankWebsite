@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import uub.model.Account;
+import uub.model.Transaction;
 import uub.model.User;
 import uub.persistentLayer.IAccountDao;
 import uub.staticLayer.CustomBankException;
@@ -31,7 +32,7 @@ public class AccountHelper {
 
 	public int getUserId(int accNo) throws CustomBankException {
 		Account account = getAccount(accNo);
-		
+
 		return account.getUserId();
 	}
 
@@ -48,6 +49,18 @@ public class AccountHelper {
 		}
 
 	}
+	
+	public void validateAccount(int userId, String password)throws CustomBankException{
+		
+		UserHelper userHelper = new UserHelper();
+		
+		User user = userHelper.getUser(userId);
+		
+		LoginHelper loginHelper = new LoginHelper();
+		
+		loginHelper.passwordValidate(password, user.getPassword());
+		
+	}
 
 	public double getBalance(int accNo) throws CustomBankException {
 
@@ -62,14 +75,26 @@ public class AccountHelper {
 		HelperUtils.nullCheck(account);
 
 		int result = accountDao.updateAccount(account);
-		
-		if(result == 0) {
+
+		if (result == 0) {
 			throw new CustomBankException("Account not found !");
 		}
 
 	}
 
-	public Account updateBalance(int accNo, double amount) throws CustomBankException {
+	public Account credit(int accNo, double amount) throws CustomBankException {
+
+		return updateBalance(accNo, amount);
+
+	}
+
+	public Account debit(int accNo, double amount) throws CustomBankException {
+
+		return updateBalance(accNo, 0-amount);
+
+	}
+
+	private Account updateBalance(int accNo, double amount) throws CustomBankException {
 
 		Account account = getAccount(accNo);
 
@@ -102,4 +127,16 @@ public class AccountHelper {
 
 	}
 
+	
+
+	public List<Transaction> getNDaysTransaction(int accNo, int days,int limit, int page) throws CustomBankException {
+
+		TransactionHelper transactionHelper = new TransactionHelper();
+		long todayMillis = System.currentTimeMillis();
+
+		long ansMillis = todayMillis - 86400000 * (days);
+
+		return transactionHelper.getTransactions(accNo, ansMillis, limit ,(page-1)*50);
+
+	}
 }

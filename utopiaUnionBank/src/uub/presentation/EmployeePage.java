@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import uub.logicalLayer.AccountHelper;
+import uub.logicalLayer.AdminHelper;
 import uub.logicalLayer.BranchHelper;
 import uub.logicalLayer.EmployeeHelper;
 import uub.model.Account;
@@ -193,7 +194,7 @@ public class EmployeePage extends Runner {
 	}
 
 	private void activateUser() throws CustomBankException {
-		EmployeeHelper employeeHelper = new EmployeeHelper();
+		AdminHelper adminHelper = new AdminHelper();
 
 		boolean exit = false;
 
@@ -203,7 +204,7 @@ public class EmployeePage extends Runner {
 				logger.info("Enter the userId to activate :");
 				int id = scanner.nextInt();
 
-				employeeHelper.activateUser(id);
+				adminHelper.activateUser(id);
 				exit = true;
 			} catch (CustomBankException e) {
 				logger.severe(e.getMessage());
@@ -212,7 +213,7 @@ public class EmployeePage extends Runner {
 	}
 
 	private void inActivateUser() throws CustomBankException {
-		EmployeeHelper employeeHelper = new EmployeeHelper();
+		AdminHelper adminHelper = new AdminHelper();
 
 		boolean exit = false;
 
@@ -222,7 +223,7 @@ public class EmployeePage extends Runner {
 				logger.info("Enter the userId to deactivate :");
 				int id = scanner.nextInt();
 
-				employeeHelper.deActivateUser(id);
+				adminHelper.deActivateUser(id);
 				exit = true;
 			} catch (CustomBankException e) {
 				logger.severe(e.getMessage());
@@ -328,9 +329,9 @@ public class EmployeePage extends Runner {
 		boolean exit = false;
 		while (!exit) {
 			try {
-				EmployeeHelper employeeHelper = new EmployeeHelper();
+				AdminHelper adminHelper = new AdminHelper();
 
-				List<User> users = employeeHelper.getInactiveEmployees();
+				List<User> users = adminHelper.getInactiveEmployees();
 
 				int size = users.size();
 
@@ -382,9 +383,9 @@ public class EmployeePage extends Runner {
 		boolean exit = false;
 		while (!exit) {
 			try {
-				EmployeeHelper employeeHelper = new EmployeeHelper();
+				AdminHelper adminHelper = new AdminHelper();
 
-				List<User> users = employeeHelper.getActiveEmployees();
+				List<User> users = adminHelper.getActiveEmployees();
 
 				int size = users.size();
 
@@ -639,9 +640,9 @@ public class EmployeePage extends Runner {
 				logger.info("Enter Role:");
 				employee.setRole(scanner.nextLine());
 
-				EmployeeHelper employeeHelper = new EmployeeHelper();
+				AdminHelper adminHelper = new AdminHelper();
 
-				employeeHelper.addEmployee(employee);
+				adminHelper.addEmployee(employee);
 				logger.warning("Employee Created ");
 				exit = true;
 			} catch (CustomBankException | ParseException e) {
@@ -895,14 +896,14 @@ public class EmployeePage extends Runner {
 
 			try {
 
-				EmployeeHelper employeeHelper = new EmployeeHelper();
+				AdminHelper adminHelper = new AdminHelper();
 				logger.info("Employees are :");
 
-				List<Employee> employees = employeeHelper.getEmployees(branchId);
+				Map<Integer, List<Employee>> employees = adminHelper.getEmployees(branchId);
 
 				int size = employees.size();
 
-				for (Employee employee : employees) {
+				for (Map.Entry<Integer, List<Employee>> employee : employees.entrySet()) {
 
 					logger.info(employee.toString());
 

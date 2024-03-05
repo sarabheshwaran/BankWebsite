@@ -4,6 +4,8 @@ import java.util.List;
 
 import uub.logicalLayer.CustomerHelper;
 import uub.logicalLayer.TransactionHelper;
+import uub.logicalLayer.AccountHelper;
+
 import uub.model.Account;
 import uub.model.Customer;
 import uub.model.Transaction;
@@ -64,17 +66,31 @@ public class CustomerPage extends Runner {
 			case 3: {
 
 				logger.fine("Transaction Portal");
+				boolean flag = true;
+				while(flag) {
 
+					try {
 				Transaction transaction = getTransaction();
 				
 				transactionHelper.performTransaction(transaction);
-
+				flag = false;
 				logger.warning("Press Enter to Exit");
 				scanner.nextLine();
+				}
+				catch (CustomBankException e) {
+					// TODO: handle exception
+					
+					logger.severe(e.getMessage()+" cause : "+e.getCause());
+				}}
 
 				break;
 			}
-			case 4: {
+			case 4:{
+				
+				logger.fine("Histor");
+				
+			}
+			case 5: {
 
 				exit = true;
 
@@ -163,14 +179,14 @@ public class CustomerPage extends Runner {
 
 	private void displayHistory(int accNo) throws CustomBankException {
 		
-		TransactionHelper transactionHelper = new TransactionHelper();
+		AccountHelper accountHelper = new AccountHelper();
 		
 		logger.info("Enter no of day ro get transaction history");
 		
 		int n = scanner.nextInt();
 		scanner.nextLine();
 		
-		List<Transaction> transactions = transactionHelper.getNDaysTransaction(accNo, n);
+		List<Transaction> transactions = accountHelper.getNDaysTransaction(accNo, n, 20, 1);
 		if(!transactions.isEmpty()) {
 		for(Transaction transaction : transactions) {
 			

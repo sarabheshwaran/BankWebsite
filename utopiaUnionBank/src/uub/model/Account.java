@@ -1,12 +1,14 @@
 package uub.model;
 
+import uub.staticLayer.HelperUtils;
+
 public class Account {
 	
 	private int accNo;
 	private int userId;
 	private int branchId;
 	private String type;
-	private double balance;
+	private double balance = -1;
 	private String status;
 	
 	
@@ -46,7 +48,7 @@ public class Account {
 		return balance;
 	}
 	public void setBalance(double balance) {
-		this.balance = balance;
+		this.balance = HelperUtils.doubleFormat(balance);
 	}
 	public String getStatus() {
 		return status;
