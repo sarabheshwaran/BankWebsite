@@ -1,4 +1,4 @@
-package uub.persistentLayer;
+package uub.persistentinterfaces;
 
 import java.util.List;
 
@@ -16,8 +16,11 @@ public interface ITransactionDao {
 
 
 
-	List<Transaction> getTransactions(int accNo, long from, int offSet, int limit) throws CustomBankException;
 
-	List<Transaction> getTransactionsOfUser(int userId, long from, int offSet, int limit) throws CustomBankException;
+
+	List<Transaction> getTransactions(int accNo, long from, long to, int limit, int offSet) throws CustomBankException;
+
+	List<Transaction> getTransactionsOfUser(int userId, long from, long to, int limit, int offSet)
+			throws CustomBankException;
 	
 }

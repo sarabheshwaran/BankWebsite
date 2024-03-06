@@ -6,8 +6,8 @@ import java.util.List;
 
 import uub.model.Account;
 import uub.model.Customer;
-import uub.persistentLayer.IAccountDao;
-import uub.persistentLayer.ICustomerDao;
+import uub.persistentinterfaces.IAccountDao;
+import uub.persistentinterfaces.ICustomerDao;
 import uub.staticLayer.CustomBankException;
 
 public class CustomerHelper {
@@ -17,10 +17,10 @@ public class CustomerHelper {
 
 	public CustomerHelper() throws CustomBankException {
 		try {
-			Class<?> AccountDao = Class.forName("uub.persistentLayer.AccountDao");
+			Class<?> AccountDao = Class.forName("uub.persistentlayer.AccountDao");
 			Constructor<?> accDao = AccountDao.getDeclaredConstructor();
 
-			Class<?> CustomerDao = Class.forName("uub.persistentLayer.CustomerDao");
+			Class<?> CustomerDao = Class.forName("uub.persistentlayer.CustomerDao");
 			Constructor<?> cusDao = CustomerDao.getDeclaredConstructor();
 
 			accountDao = (IAccountDao) accDao.newInstance();
@@ -33,22 +33,12 @@ public class CustomerHelper {
 		}
 	}
 
-	public Customer getProfile(String username) throws CustomBankException {
-
-		List<Customer> customers = customerDao.getCustomersWithEmail(username);
-
-		if (!customers.isEmpty()) {
-			return customers.get(0);
-		} else {
-			throw new CustomBankException("Customer not found!");
-		}
-
-	}
 
 	public Customer getCustomer(int id) throws CustomBankException {
 
 		List<Customer> customers = customerDao.getCustomers(id);
 
+		
 		if (!customers.isEmpty()) {
 			return customers.get(0);
 		} else {

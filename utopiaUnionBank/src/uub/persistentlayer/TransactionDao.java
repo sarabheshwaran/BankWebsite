@@ -1,4 +1,4 @@
-package uub.persistentLayer;
+package uub.persistentlayer;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,31 +9,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uub.model.Transaction;
+import uub.persistentinterfaces.ITransactionDao;
 import uub.staticLayer.ConnectionManager;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HelperUtils;
 
 public class TransactionDao implements ITransactionDao {
 
-	private static final String addQuery = "INSERT INTO TRANSACTION (ID, USER_ID, ACC_NO, TRANSACTION_ACC, TYPE, AMOUNT, OPENING_BAL, CLOSING_BAL, DESCRIPTION, TIME, STATUS) "
-			+ "VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
 	@Override
-	public List<Transaction> getTransactions(int accNo, long from, int limit, int offSet) throws CustomBankException {
+	public List<Transaction> getTransactions(int accNo, long from, long to ,int limit, int offSet) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO =" + accNo + " AND TIME > " + from + " LIMIT  "
-				+ limit + " OFFSET " + offSet;
+		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO =" + accNo + " AND TIME BETWEEN " + from +" AND "+ to 
+				+" ORDER BY ID DESC  LIMIT  "+ limit + " OFFSET " + offSet ;
 
 		return getTransactions(getQuery);
 
 	}
 
 	@Override
-	public List<Transaction> getTransactionsOfUser(int userId, long from, int limit, int offSet)
+	public List<Transaction> getTransactionsOfUser(int userId, long from, long to, int limit, int offSet)
 			throws CustomBankException {
 
-		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO =" + userId + " AND TIME > " + from + " LIMIT  "
-				+ limit + " OFFSET " + offSet;
+		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO =" + userId + " AND TIME BETWEEN " + from +" AND "+ to 
+				+" ORDER BY ID DESC  LIMIT  "+  limit + " OFFSET " + offSet ;
 
 		return getTransactions(getQuery);
 
@@ -64,6 +62,9 @@ public class TransactionDao implements ITransactionDao {
 
 		HelperUtils.nullCheck(transaction);
 
+		String addQuery = "INSERT INTO TRANSACTION (ID, USER_ID, ACC_NO, TRANSACTION_ACC, TYPE, AMOUNT, OPENING_BAL, CLOSING_BAL, DESCRIPTION, TIME, STATUS) "
+				+ "VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		
 		try (Connection connection = ConnectionManager.getConnection();
 				PreparedStatement statement = connection.prepareStatement(addQuery)) {
 			statement.setObject(1, transaction.getId());
@@ -78,7 +79,6 @@ public class TransactionDao implements ITransactionDao {
 			statement.setObject(10, transaction.getTime());
 			statement.setObject(11, transaction.getStatus());
 
-			System.out.println(statement);
 			statement.executeUpdate();
 
 		} catch (SQLException e) {
@@ -94,7 +94,7 @@ public class TransactionDao implements ITransactionDao {
 		String query = "SELECT MAX(ID) AS max_id FROM TRANSACTION";
 
 		try (Connection connection = ConnectionManager.getConnection();
-				PreparedStatement statement = connection.prepareStatement(query)) {
+			PreparedStatement statement = connection.prepareStatement(query)) {
 			
 			ResultSet resultSet = statement.executeQuery();
 

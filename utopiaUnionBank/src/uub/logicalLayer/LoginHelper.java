@@ -1,54 +1,53 @@
 package uub.logicalLayer;
 
-
-
 import uub.model.User;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HashEncoder;
+import uub.staticLayer.HelperUtils;
 
 public class LoginHelper {
-	
 
-	public void passwordValidate(String givenPassword, String userPassword) throws CustomBankException {
-		
-		givenPassword = HashEncoder.encode(givenPassword);
-		
-		if(givenPassword != userPassword) {
-			
-			throw new CustomBankException("Wrong password");
+	public void passwordValidate(User user, String password) throws CustomBankException {
+
+		HelperUtils.nullCheck(user);
+		HelperUtils.nullCheck(password);
+
+		password = HashEncoder.encode(password);
+
+		if (!user.getPassword().equals(password)) {
+
+			throw new CustomBankException("Password Wrong");
+
 		}
-		
+
 	}
-	
 
-	public int login(String userName, String passWord) throws CustomBankException {
+	public int login(int id, String password) throws CustomBankException {
 
+		HelperUtils.nullCheck(password);
 		
-		UserHelper userHelper = new UserHelper();
-		
+		try {
+			UserHelper userHelper = new UserHelper();
 
-		
-		User user = userHelper.getUser(userName);
+			User user = userHelper.getUser(id);
 
-	
-		passwordValidate(passWord, user.getPassword());
-			
-		
-				String userType = user.getUserType();
+			passwordValidate(user, password);
 
-				if (userType.equals("Customer")) {
-					
-					return 1;
-					
-				} else {
-					
-					return 2;
+			String userType = user.getUserType();
 
-				}
+			if (userType.equals("Customer")) {
+
+				return 1;
+
+			} else {
+
+				return 2;
 
 			}
-		
+		} catch (CustomBankException e) {
+			throw new CustomBankException("Login Failed", e);
+		}
 
 	}
 
-
+}

@@ -1,4 +1,4 @@
-package uub.persistentLayer;
+package uub.persistentinterfaces;
 
 import java.util.List;
 import java.util.Map;
@@ -12,15 +12,15 @@ public interface IAccountDao {
 
 	int updateAccount(Account account) throws CustomBankException;
 
-	Map<Integer, List<Account>> getBranchAccounts(int branchId, String status) throws CustomBankException;
 
 	List<Account> getUserAccounts(int userId, String status) throws CustomBankException;
 
 	List<Account> getAccount(int accNo) throws CustomBankException;
 
-	List<Account> getAllAccounts(String status) throws CustomBankException;
 
-	Map<Integer, List<Account>> getBranchAccounts(String status) throws CustomBankException;
+
+	Map<Integer, List<Account>> getBranchAccounts(int branchId, String status, int limit, int offSet)
+			throws CustomBankException;
 	
 
 

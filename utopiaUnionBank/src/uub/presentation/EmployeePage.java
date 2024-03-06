@@ -17,16 +17,17 @@ import uub.model.Customer;
 import uub.model.Employee;
 import uub.model.User;
 import uub.staticLayer.CustomBankException;
+import uub.staticLayer.DateUtils;
 
 public class EmployeePage extends Runner {
 
 	private static Employee employee;
 
-	public EmployeePage(String username) throws CustomBankException {
+	public EmployeePage(int id) throws CustomBankException {
 
 		EmployeeHelper employeeHelper = new EmployeeHelper();
 
-		employee = employeeHelper.getProfile(username);
+		employee = employeeHelper.getEmployee(id);
 		String role = employee.getRole();
 
 		boolean exit = false;
@@ -42,11 +43,13 @@ public class EmployeePage extends Runner {
 					logger.info("Please Select an option : -");
 					logger.info(i++ + ". See Profile.");
 					logger.info(i++ + ". See All Branches.");
-					logger.info(i++ + ". See all active Employees");
-					logger.info(i++ + ". See all inactive Employees");
-					logger.info(i++ + ". See all active Customers");
-					logger.info(i++ + ". See all inactive CUstomers");
+					logger.info(i+++". Activate account");
+					logger.info(i+++". Dectivate account");
+					logger.info(i+++". Activate user");
+					logger.info(i+++". Dectivate user");
+					logger.info(i++ + ". See All Employees.");
 					logger.info(i++ + ". Add Customer.");
+					logger.info(i++ + ". Add Employee.");
 					logger.info(i++ + ". Logout");
 
 					int choice = scanner.nextInt();
@@ -71,33 +74,32 @@ public class EmployeePage extends Runner {
 					}
 					case 3: {
 
-						logActiveEmployees();
+						activateAcc();
 						logger.warning("Press Enter to Exit");
 						scanner.nextLine();
 						break;
 					}
 					case 4: {
 
-						logInactiveEmployees();
+						inActivateAcc();
 						logger.warning("Press Enter to Exit");
 						scanner.nextLine();
 						break;
 					}
 					case 5: {
 
-						logActiveCustomers();
+						activateUser();
 						logger.warning("Press Enter to Exit");
 						scanner.nextLine();
 						break;
 					}
 					case 6: {
 
-						logInactiveCustomers();
+						inActivateUser();
 						logger.warning("Press Enter to Exit");
 						scanner.nextLine();
 						break;
 					}
-
 					case 7: {
 
 						createCustomer();
@@ -105,7 +107,13 @@ public class EmployeePage extends Runner {
 						scanner.nextLine();
 						break;
 					}
-					case 8: {
+					case 8:{
+						createEmployee();
+						logger.warning("Press Enter to Exit");
+						scanner.nextLine();
+						break;
+					}
+					case 9: {
 
 						exit = true;
 						break;
@@ -135,8 +143,8 @@ public class EmployeePage extends Runner {
 					logger.fine("Employee Portal");
 					logger.info("Please Select an option : -");
 					logger.info(i++ + ". See Profile.");
-					logger.info(i++ + ". See All Active accounts.");
-					logger.info(i++ + ". See Inactive accounts.");
+					logger.info(i+++". Activate account");
+					logger.info(i+++". Dectivate account");
 					logger.info(i++ + ". Add Customer.");
 					logger.info(i++ + ". Logout");
 
@@ -153,7 +161,7 @@ public class EmployeePage extends Runner {
 					}
 					case 2: {
 
-						logActiveAccounts(employee.getBranchId());
+						activateAcc();
 						logger.warning("Press Enter to Exit");
 						scanner.nextLine();
 
@@ -277,7 +285,7 @@ public class EmployeePage extends Runner {
 			try {
 				EmployeeHelper employeeHelper = new EmployeeHelper();
 
-				List<User> users = employeeHelper.getInactiveCustomers();
+				List<User> users = employeeHelper.getInactiveCustomers(10,0);
 
 				int size = users.size();
 
@@ -331,7 +339,7 @@ public class EmployeePage extends Runner {
 			try {
 				AdminHelper adminHelper = new AdminHelper();
 
-				List<User> users = adminHelper.getInactiveEmployees();
+				List<User> users = adminHelper.getInactiveEmployees(10,0);
 
 				int size = users.size();
 
@@ -385,7 +393,7 @@ public class EmployeePage extends Runner {
 			try {
 				AdminHelper adminHelper = new AdminHelper();
 
-				List<User> users = adminHelper.getActiveEmployees();
+				List<User> users = adminHelper.getActiveEmployees(10,0);
 
 				int size = users.size();
 
@@ -445,7 +453,7 @@ public class EmployeePage extends Runner {
 			try {
 				EmployeeHelper employeeHelper = new EmployeeHelper();
 
-				List<User> users = employeeHelper.getActiveCustomers();
+				List<User> users = employeeHelper.getActiveCustomers(10,0);
 
 				int size = users.size();
 
@@ -552,13 +560,12 @@ public class EmployeePage extends Runner {
 
 				logger.info("Enter Date of Birth (dd-mm-yyyy): ");
 
-				SimpleDateFormat dateFormat = new SimpleDateFormat("dd-mm-yyyy");
 
-				Date date;
-				long millis = 0;
-
-				date = dateFormat.parse(scanner.nextLine());
-				millis = date.getTime();
+				
+				String dateString = scanner.nextLine();
+				
+				long millis = DateUtils.formatDate(DateUtils.formatDateString(dateString));
+				
 
 				customer.setdOB(millis);
 
@@ -584,7 +591,7 @@ public class EmployeePage extends Runner {
 				logger.warning("CUstomer created ");
 				exit = true;
 
-			} catch (CustomBankException | ParseException e) {
+			} catch (CustomBankException  e) {
 				logger.warning(e.getMessage());
 			} catch (InputMismatchException e) {
 				logger.severe("Enter valid input!");
@@ -667,7 +674,12 @@ public class EmployeePage extends Runner {
 
 			try {
 				EmployeeHelper employeeHelper = new EmployeeHelper();
-				Map<Integer, List<Account>> accounts = employeeHelper.getActiveAccounts(branchId);
+				
+				logger.info("Enter page no.");
+				int p = scanner.nextInt();
+				scanner.nextLine();
+				
+				Map<Integer, List<Account>> accounts = employeeHelper.getActiveAccounts(branchId,20,(p-1)*20);
 
 				int size = accounts.size();
 
@@ -725,7 +737,12 @@ public class EmployeePage extends Runner {
 		while(!exit) {
 		try {
 			EmployeeHelper employeeHelper = new EmployeeHelper();
-			Map<Integer, List<Account>> accounts = employeeHelper.getInactiveAccounts(branchId);
+			
+			logger.info("Enter page no.");
+			int p = scanner.nextInt();
+			scanner.nextLine();
+			
+			Map<Integer, List<Account>> accounts = employeeHelper.getInactiveAccounts(branchId,20,(p-1)*20);
 
 			int size = accounts.size();
 
@@ -899,7 +916,7 @@ public class EmployeePage extends Runner {
 				AdminHelper adminHelper = new AdminHelper();
 				logger.info("Employees are :");
 
-				Map<Integer, List<Employee>> employees = adminHelper.getEmployees(branchId);
+				Map<Integer, List<Employee>> employees = adminHelper.getEmployees(branchId,20,0);
 
 				int size = employees.size();
 
@@ -958,9 +975,8 @@ public class EmployeePage extends Runner {
 		logger.info("Name: " + employee.getName());
 		logger.info("Email: " + employee.getEmail());
 		logger.info("Phone: " + employee.getPhone());
-		logger.info("DOB: " + employee.getdOB());
+		logger.info("DOB: " + DateUtils.formatDate( employee.getdOB()));
 		logger.info("Gender: " + employee.getGender());
-		logger.info("Password: " + employee.getPassword());
 		logger.info("User Type: " + employee.getUserType());
 		logger.info("Status: " + employee.getStatus());
 		logger.info("\n");

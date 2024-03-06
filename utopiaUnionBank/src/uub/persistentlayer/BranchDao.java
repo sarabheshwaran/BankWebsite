@@ -1,4 +1,4 @@
-package uub.persistentLayer;
+package uub.persistentlayer;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uub.model.Branch;
+import uub.persistentinterfaces.IBranchDao;
 import uub.staticLayer.ConnectionManager;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HelperUtils;
@@ -20,7 +21,7 @@ public class BranchDao implements IBranchDao {
 	public BranchDao() throws CustomBankException {
 		connection = ConnectionManager.getConnection();
 	}
-
+	@Override
 	public List<Branch> getBranchWithId(int id) throws CustomBankException {
 		String getQuery = "SELECT * FROM BRANCH WHERE ID = " + id;
 		return getBranches(getQuery);
@@ -30,6 +31,31 @@ public class BranchDao implements IBranchDao {
 	public List<Branch> getBranches() throws CustomBankException {
 		String getQuery = "SELECT * FROM BRANCH ";
 		return getBranches(getQuery);
+	}
+	
+
+	private List<Branch> getBranches(String query) throws CustomBankException {
+
+		List<Branch> branches = new ArrayList<>();
+
+		HelperUtils.nullCheck(query);
+
+		try (Connection connection = ConnectionManager.getConnection();
+				Statement statement = connection.createStatement();) {
+
+			ResultSet resultSet = statement.executeQuery(query);
+
+			while (resultSet.next()) {
+				Branch branch = mapBranch(resultSet);
+				branches.add(branch);
+			}
+
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+		return branches;
+
 	}
 
 	@Override
@@ -65,9 +91,9 @@ public class BranchDao implements IBranchDao {
 			
 			for (Branch branch : branches) {
 
-				HelperUtils.setParameter(statement, 1, branch.getiFSC());
-				HelperUtils.setParameter(statement, 2, branch.getName());
-				HelperUtils.setParameter(statement, 3, branch.getAddress());
+				statement.setObject( 1, branch.getiFSC());
+				statement.setObject( 2, branch.getName());
+				statement.setObject( 3, branch.getAddress());
 
 				statement.addBatch();
 			}
@@ -79,44 +105,8 @@ public class BranchDao implements IBranchDao {
 
 	}
 
-	private List<Branch> getBranches(String query) throws CustomBankException {
-
-		List<Branch> branches = new ArrayList<>();
-
-		HelperUtils.nullCheck(query);
-
-		try (Connection connection = ConnectionManager.getConnection();
-				Statement statement = connection.createStatement();) {
-
-			ResultSet resultSet = statement.executeQuery(query);
-
-			while (resultSet.next()) {
-				Branch branch = mapBranch(resultSet);
-				branches.add(branch);
-			}
-
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-
-		return branches;
-
-	}
-
-	private Branch mapBranch(ResultSet resultSet) throws SQLException {
-
-		Branch branch = new Branch();
-		branch.setId(resultSet.getInt("id"));
-		branch.setiFSC(resultSet.getString("ifsc"));
-		branch.setName(resultSet.getString("name"));
-		branch.setAddress(resultSet.getString("address"));
-
-		return branch;
-	}
-
 	@Override
-	public List<Branch> updateBranches(Branch branch) throws CustomBankException {
-		List<Branch> branches = new ArrayList<>();
+	public void updateBranches(Branch branch) throws CustomBankException {
 
 		HelperUtils.nullCheck(branch);
 
@@ -128,18 +118,26 @@ public class BranchDao implements IBranchDao {
 				PreparedStatement statement = connection.prepareStatement(getQuery1.toString())) {
 
 			setValues(statement, branch);
-			ResultSet resultSet = statement.executeQuery();
+			statement.executeUpdate();
 
-			while (resultSet.next()) {
-				branch = mapBranch(resultSet);
-				branches.add(branch);
-			}
+		
 
 		} catch (SQLException e) {
 			throw new CustomBankException(e.getMessage());
 		}
 
-		return branches;
+	}
+
+
+	private Branch mapBranch(ResultSet resultSet) throws SQLException {
+
+		Branch branch = new Branch();
+		branch.setId(resultSet.getInt("id"));
+		branch.setiFSC(resultSet.getString("ifsc"));
+		branch.setName(resultSet.getString("name"));
+		branch.setAddress(resultSet.getString("address"));
+
+		return branch;
 	}
 
 	private String getFieldList(Branch branch) {

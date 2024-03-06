@@ -1,4 +1,4 @@
-package uub.persistentLayer;
+package uub.persistentinterfaces;
 
 import java.util.List;
 import java.util.Map;
@@ -10,7 +10,6 @@ public interface IEmployeeDao {
 
 	
 
-	public List<Employee> getEmployees() throws CustomBankException;
 
 	public void addEmployee(List<Employee> employees) throws CustomBankException;
 
@@ -19,10 +18,8 @@ public interface IEmployeeDao {
 
 	List<Employee> getEmployees(int id) throws CustomBankException;
 
-	List<Employee> getEmployeesWithEmail(String email) throws CustomBankException;
 
-
-	Map<Integer, List<Employee>> getEmployeesWithBranch(int branchId) throws CustomBankException;
+	Map<Integer, List<Employee>> getEmployeesWithBranch(int branchId, int limit, int offSet) throws CustomBankException;
 
 
 

@@ -1,4 +1,4 @@
-package uub.persistentLayer;
+package uub.persistentinterfaces;
 
 import java.util.List;
 
@@ -16,7 +16,9 @@ public interface IBranchDao {
 
 	int getLastId() throws CustomBankException;
 
-	List<Branch> updateBranches(Branch branch) throws CustomBankException;
+	void updateBranches(Branch branch) throws CustomBankException;
+
+	List<Branch> getBranchWithId(int id) throws CustomBankException;
 	
 		
 }

@@ -1,4 +1,4 @@
-package uub.persistentLayer;
+package uub.persistentlayer;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,17 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 import uub.model.Employee;
+import uub.persistentinterfaces.IEmployeeDao;
 import uub.staticLayer.ConnectionManager;
 import uub.staticLayer.CustomBankException;
-import uub.staticLayer.HelperUtils;
 
 public class EmployeeDao implements IEmployeeDao {
-
-	private static final StringBuilder getQuery2 = new StringBuilder(
-			"SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID ");
-
-	private static final String addQuery1 = "INSERT INTO USER (NAME,EMAIL,PHONE,DOB,GENDER,PASSWORD,USER_TYPE,STATUS) VALUES (?,?,?,?,?,?,?,?)";
-	private static final String addQuery2 = "INSERT INTO EMPLOYEE VALUES (?,?,?)";
 
 	@Override
 	public List<Employee> getEmployees(int id) throws CustomBankException {
@@ -34,45 +28,14 @@ public class EmployeeDao implements IEmployeeDao {
 	}
 
 	@Override
-	public List<Employee> getEmployeesWithEmail(String email) throws CustomBankException {
-
-		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMAIL = '" + email
-				+ "' AND STATUS = 'ACTIVE'";
-
-		return getEmployees(getQuery);
-
-	}
-
-	@Override
-	public Map<Integer, List<Employee>> getEmployeesWithBranch(int branchId) throws CustomBankException {
+	public Map<Integer, List<Employee>> getEmployeesWithBranch(int branchId, int limit, int offSet)
+			throws CustomBankException {
 
 		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.BRANCH_ID = "
-				+ branchId;
+				+ branchId + " AND STATUS = 'ACTIVE'" + " LIMIT " + limit + " OFFSET " + offSet;
+
 		return getEmployeesOfBranch(getQuery);
 
-	}
-
-	@Override
-	public List<Employee> getEmployees() throws CustomBankException {
-
-		List<Employee> employees = new ArrayList<Employee>();
-
-		try (Connection connection = ConnectionManager.getConnection();
-				PreparedStatement statement = connection.prepareStatement(getQuery2.toString())) {
-
-			ResultSet resultSet = statement.executeQuery();
-
-			while (resultSet.next()) {
-
-				Employee employee = mapEmployee(resultSet);
-				employees.add(employee);
-			}
-
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-
-		return employees;
 	}
 
 	@Override
@@ -80,20 +43,23 @@ public class EmployeeDao implements IEmployeeDao {
 
 		Connection connection = ConnectionManager.getConnection();
 
+		String addQuery1 = "INSERT INTO USER (NAME,EMAIL,PHONE,DOB,GENDER,PASSWORD,USER_TYPE,STATUS) VALUES (?,?,?,?,?,?,?,?)";
+		String addQuery2 = "INSERT INTO EMPLOYEE VALUES (?,?,?)";
+
 		try (PreparedStatement statement = connection.prepareStatement(addQuery1,
 				PreparedStatement.RETURN_GENERATED_KEYS);
 				PreparedStatement statement2 = connection.prepareStatement(addQuery2)) {
 
 			connection.setAutoCommit(false);
 			for (Employee employee : employees) {
-				HelperUtils.setParameter(statement, 1, employee.getName());
-				HelperUtils.setParameter(statement, 2, employee.getEmail());
-				HelperUtils.setParameter(statement, 3, employee.getPhone());
-				HelperUtils.setParameter(statement, 4, employee.getdOB());
-				HelperUtils.setParameter(statement, 5, employee.getGender());
-				HelperUtils.setParameter(statement, 6, employee.getPassword());
-				HelperUtils.setParameter(statement, 7, employee.getUserType());
-				HelperUtils.setParameter(statement, 8, employee.getStatus());
+				statement.setObject( 1, employee.getName());
+				statement.setObject( 2, employee.getEmail());
+				statement.setObject( 3, employee.getPhone());
+				statement.setObject( 4, employee.getdOB());
+				statement.setObject( 5, employee.getGender());
+				statement.setObject( 6, employee.getPassword());
+				statement.setObject( 7, employee.getUserType());
+				statement.setObject( 8, employee.getStatus());
 				statement.addBatch();
 			}
 			statement.executeBatch();
@@ -104,9 +70,9 @@ public class EmployeeDao implements IEmployeeDao {
 
 					int id = resultSet.getInt(1);
 					Employee employee = employees.get(index);
-					HelperUtils.setParameter(statement2, 1, id);
-					HelperUtils.setParameter(statement2, 2, employee.getRole());
-					HelperUtils.setParameter(statement2, 3, employee.getBranchId());
+					statement2.setObject( 1, id);
+					statement2.setObject( 2, employee.getRole());
+					statement2.setObject( 3, employee.getBranchId());
 
 					statement2.addBatch();
 					index++;

@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import uub.model.Branch;
-import uub.persistentLayer.IBranchDao;
+import uub.persistentinterfaces.IBranchDao;
 import uub.staticLayer.CustomBankException;
 
 public class BranchHelper {
@@ -16,16 +16,16 @@ public class BranchHelper {
 
 		try {
 
-			Class<?> BranchDao = Class.forName("uub.persistentLayer.BranchDao");
+			Class<?> BranchDao = Class.forName("uub.persistentlayer.BranchDao");
 			Constructor<?> branDao = BranchDao.getDeclaredConstructor();
 
 			branchDao = (IBranchDao) branDao.newInstance();
 
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
 				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			
+
 			throw new CustomBankException("Error getting Data ! ", e);
-			
+
 		}
 
 	}
@@ -35,19 +35,27 @@ public class BranchHelper {
 		return branchDao.getBranches();
 	}
 
+	private int getId() throws CustomBankException {
+		
+		int id = branchDao.getLastId();
+		return id + 1;
+	}
+
 	public void addBranch(Branch branch) throws CustomBankException {
 
-		int id = branchDao.getLastId();
-
-		String ifsc = "UUB" + String.format("%04d", id);
+		int id = getId();
 
 		branch.setId(id);
+		String ifsc = generateIFSC(id);
 		branch.setiFSC(ifsc);
 
 		branchDao.addBranch(List.of(branch));
 
 	}
-	
-	
+
+	private String generateIFSC(int id) {
+
+		return "UUB" + String.format("%04d", id);
+	}
 
 }

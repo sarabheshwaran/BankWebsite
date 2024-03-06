@@ -17,19 +17,19 @@ public class AdminHelper extends EmployeeHelper{
 	}
 	
 
-	public Map<Integer, List<Employee>> getEmployees(int branchId) throws CustomBankException {
+	public Map<Integer, List<Employee>> getEmployees(int branchId,int limit, int offSet) throws CustomBankException {
 
-		return employeeDao.getEmployeesWithBranch(branchId);
+		return employeeDao.getEmployeesWithBranch(branchId,limit,offSet);
 	}
 
-	public List<User> getActiveEmployees() throws CustomBankException {
+	public List<User> getActiveEmployees(int limit, int offSet) throws CustomBankException {
 
-		return userDao.getAllUsers("Employee", "ACTIVE");
+		return userDao.getAllUsers("Employee", "ACTIVE",limit,offSet);
 	}
 
-	public List<User> getInactiveEmployees() throws CustomBankException {
+	public List<User> getInactiveEmployees(int limit, int offSet) throws CustomBankException {
 
-		return userDao.getAllUsers("Employee", "ACTIVE");
+		return userDao.getAllUsers("Employee", "INACTIVE",limit,offSet);
 
 	}
 

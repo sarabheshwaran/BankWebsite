@@ -47,20 +47,21 @@ public class Runner {
 			case 1:
 				
 				logger.info("Enter UserName :");
-				String username = scanner.nextLine();
+				int id = scanner.nextInt();
+				scanner.nextLine();
 				logger.info("Enter Password :");
 				String password = scanner.nextLine();
 				
-				int login = loginHelper.login(username, password);
+				int login = loginHelper.login(id, password);
 				
 				switch (login) {
 				case 1 :{
 					logger.info("Welcome Customer");
-					new CustomerPage(username);
+					new CustomerPage(id);
 					break;}
 				case 2 :
 					logger.info("Welcome Employee");
-					new EmployeePage(username);
+					new EmployeePage(id);
 					break;
 				
 				default:

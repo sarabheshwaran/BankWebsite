@@ -1,8 +1,6 @@
 package uub.staticLayer;
 
 //import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 //import java.util.logging.ConsoleHandler;
 //import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
@@ -69,19 +67,5 @@ public class HelperUtils {
 
 	}
 
-	public static void setParameter(PreparedStatement preparedStatement, int parameterIndex, Object value)
-			throws SQLException {
-		if (value instanceof Integer) {
-			preparedStatement.setInt(parameterIndex, (Integer) value);
-		} else if (value instanceof String) {
-			preparedStatement.setString(parameterIndex, (String) value);
-		} else if (value instanceof Double) {
-			preparedStatement.setDouble(parameterIndex, (Double) value);
-		} else if (value instanceof Long) {
-			preparedStatement.setLong(parameterIndex, (Long) value);
-		} else {
-			throw new SQLException("Unsupported datatype for parameter");
-		}
-	}
 
 }

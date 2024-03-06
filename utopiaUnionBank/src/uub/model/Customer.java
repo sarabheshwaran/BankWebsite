@@ -13,7 +13,7 @@ public class Customer extends User{
 		super();
 		super.setUserType("Customer");
 		
-	};
+	}
 	
 	public Customer(int id, String name, String email, String phone, long dOB, String gender, String password,
 			String userType, String status, String aadhar, String pAN, String address) {

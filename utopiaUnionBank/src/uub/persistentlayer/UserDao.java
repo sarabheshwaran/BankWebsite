@@ -1,4 +1,4 @@
-package uub.persistentLayer;
+package uub.persistentlayer;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uub.model.User;
+import uub.persistentinterfaces.IUserDao;
 import uub.staticLayer.ConnectionManager;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HelperUtils;
@@ -24,19 +25,11 @@ public class UserDao implements IUserDao {
 
 	}
 
-	@Override
-	public List<User> getUserWithEmail(String email) throws CustomBankException {
-
-		String getQuery = "SELECT * FROM USER WHERE EMAIL = '" + email + "' AND STATUS = 'ACTIVE' ;";
-		
-		return getUsers(getQuery);
-
-	}
 
 	@Override
-	public List<User> getAllUsers(String type, String status) throws CustomBankException {
+	public List<User> getAllUsers(String type, String status, int limit , int offSet ) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM USER WHERE STATUS = '" + status + "' AND USER_TYPE = '" + type + "'";
+		String getQuery = "SELECT * FROM USER WHERE STATUS = '" + status + "' AND USER_TYPE = '" + type + "'" +" LIMIT " + limit + " OFFSET " + offSet ;
 
 		return getUsers(getQuery);
 
@@ -68,7 +61,7 @@ public class UserDao implements IUserDao {
 		List<User> users = new ArrayList<User>();
 
 		try (Connection connection = ConnectionManager.getConnection();
-				Statement statement = connection.createStatement()) {
+			Statement statement = connection.createStatement();) {
 			ResultSet resultSet = statement.executeQuery(query);
 
 			while (resultSet.next()) {

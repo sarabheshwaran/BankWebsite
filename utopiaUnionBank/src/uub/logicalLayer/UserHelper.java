@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import uub.model.User;
-import uub.persistentLayer.IUserDao;
+import uub.persistentinterfaces.IUserDao;
 import uub.staticLayer.CustomBankException;
 
 public class UserHelper {
@@ -16,7 +16,7 @@ public class UserHelper {
 
 		try {
 
-			Class<?> UserDao = Class.forName("uub.persistentLayer.UserDao");
+			Class<?> UserDao = Class.forName("uub.persistentlayer.UserDao");
 			Constructor<?> useDao = UserDao.getDeclaredConstructor();
 
 			userDao = (IUserDao) useDao.newInstance();
@@ -29,17 +29,7 @@ public class UserHelper {
 
 	}
 
-	public User getUser(String username) throws CustomBankException {
 
-		List<User> users = userDao.getUserWithEmail(username);
-
-		if (!users.isEmpty()) {
-			return users.get(0);
-		} else {
-			throw new CustomBankException("User Not Found !");
-		}
-
-	}
 
 	public User getUser(int id) throws CustomBankException {
 

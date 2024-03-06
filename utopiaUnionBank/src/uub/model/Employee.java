@@ -10,7 +10,6 @@ public class Employee extends User{
 	public Employee() {
 		super();
 		super.setUserType("Employee");
-		// TODO Auto-generated constructor stub
 	}
 
 

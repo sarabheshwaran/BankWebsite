@@ -1,4 +1,4 @@
-package uub.persistentLayer;
+package uub.persistentlayer;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,14 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uub.model.Customer;
+import uub.persistentinterfaces.ICustomerDao;
 import uub.staticLayer.ConnectionManager;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HelperUtils;
 
 public class CustomerDao implements ICustomerDao {
 
-	private static final String addQuery1 = "INSERT INTO USER (NAME,EMAIL,PHONE,DOB,GENDER,PASSWORD,USER_TYPE,STATUS) VALUES (?,?,?,?,?,?,?,?)";
-	private static final String addQuery2 = "INSERT INTO CUSTOMER VALUES (?,?,?,?)";
 
 	
 
@@ -25,6 +24,9 @@ public class CustomerDao implements ICustomerDao {
 
 		Connection connection = ConnectionManager.getConnection();
 		
+		String addQuery1 = "INSERT INTO USER (NAME,EMAIL,PHONE,DOB,GENDER,PASSWORD,USER_TYPE,STATUS) VALUES (?,?,?,?,?,?,?,?)";
+		String addQuery2 = "INSERT INTO CUSTOMER VALUES (?,?,?,?)";
+		
 		try (
 				PreparedStatement statement = connection.prepareStatement(addQuery1,
 				PreparedStatement.RETURN_GENERATED_KEYS);
@@ -32,14 +34,14 @@ public class CustomerDao implements ICustomerDao {
 
 			connection.setAutoCommit(false);
 			for (Customer customer : customers) {
-				HelperUtils.setParameter(statement, 1, customer.getName());
-				HelperUtils.setParameter(statement, 2, customer.getEmail());
-				HelperUtils.setParameter(statement, 3, customer.getPhone());
-				HelperUtils.setParameter(statement, 4, customer.getdOB());
-				HelperUtils.setParameter(statement, 5, customer.getGender());
-				HelperUtils.setParameter(statement, 6, customer.getPassword());
-				HelperUtils.setParameter(statement, 7, customer.getUserType());
-				HelperUtils.setParameter(statement, 8, customer.getStatus());
+				statement.setObject( 1, customer.getName());
+				statement.setObject( 2, customer.getEmail());
+				statement.setObject( 3, customer.getPhone());
+				statement.setObject( 4, customer.getdOB());
+				statement.setObject( 5, customer.getGender());
+				statement.setObject( 6, customer.getPassword());
+				statement.setObject( 7, customer.getUserType());
+				statement.setObject( 8, customer.getStatus());
 				statement.addBatch();
 			}
 			statement.executeBatch();
@@ -50,10 +52,10 @@ public class CustomerDao implements ICustomerDao {
 
 					int id = resultSet.getInt(1);
 					Customer customer = customers.get(index);
-					HelperUtils.setParameter(statement2, 1, id);
-					HelperUtils.setParameter(statement2, 2, customer.getAadhar());
-					HelperUtils.setParameter(statement2, 3, customer.getpAN());
-					HelperUtils.setParameter(statement2, 4, customer.getAddress());
+					statement2.setObject( 1, id);
+					statement2.setObject( 2, customer.getAadhar());
+					statement2.setObject( 3, customer.getpAN());
+					statement2.setObject( 4, customer.getAddress());
 
 					statement2.addBatch();
 					index++;
@@ -85,7 +87,7 @@ public class CustomerDao implements ICustomerDao {
 	@Override
 	public List<Customer> getCustomers(int id) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM CUSTOMER JOIN USER ON CUSTOMER.ID = USER.ID WHERE CUSTOMER.ID = " + id +" AND STATUS = 'INACTIVE'";
+		String getQuery = "SELECT * FROM CUSTOMER JOIN USER ON CUSTOMER.ID = USER.ID WHERE CUSTOMER.ID = " + id +" AND STATUS = 'ACTIVE'";
 
 		return getCustomers(getQuery);
 

@@ -15,13 +15,14 @@ public class ConnectionManager {
 
 	public static Connection getConnection() throws CustomBankException {
 		try {
-		if (connection == null) {
+		
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			connection = DriverManager.getConnection(url, userName, password);
-		}
+		
 		return connection;}
 		catch ( ClassNotFoundException| SQLException e) {
 			throw new CustomBankException("Connection not created");
+			
 		}
 	}
 

@@ -9,11 +9,10 @@ import uub.model.Account;
 import uub.model.Customer;
 import uub.model.Employee;
 import uub.model.User;
-
-import uub.persistentLayer.IUserDao;
-import uub.persistentLayer.IAccountDao;
-import uub.persistentLayer.ICustomerDao;
-import uub.persistentLayer.IEmployeeDao;
+import uub.persistentinterfaces.IAccountDao;
+import uub.persistentinterfaces.ICustomerDao;
+import uub.persistentinterfaces.IEmployeeDao;
+import uub.persistentinterfaces.IUserDao;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HashEncoder;
 import uub.staticLayer.HelperUtils;
@@ -28,16 +27,16 @@ public class EmployeeHelper {
 	public EmployeeHelper() throws CustomBankException {
 
 		try {
-			Class<?> AccountDao = Class.forName("uub.persistentLayer.AccountDao");
+			Class<?> AccountDao = Class.forName("uub.persistentlayer.AccountDao");
 			Constructor<?> accDao = AccountDao.getDeclaredConstructor();
 
-			Class<?> EmployeeDao = Class.forName("uub.persistentLayer.EmployeeDao");
+			Class<?> EmployeeDao = Class.forName("uub.persistentlayer.EmployeeDao");
 			Constructor<?> empDao = EmployeeDao.getDeclaredConstructor();
 
-			Class<?> UserDao = Class.forName("uub.persistentLayer.UserDao");
+			Class<?> UserDao = Class.forName("uub.persistentlayer.UserDao");
 			Constructor<?> useDao = UserDao.getDeclaredConstructor();
 
-			Class<?> CustomerDao = Class.forName("uub.persistentLayer.CustomerDao");
+			Class<?> CustomerDao = Class.forName("uub.persistentlayer.CustomerDao");
 			Constructor<?> cusDao = CustomerDao.getDeclaredConstructor();
 
 			accountDao = (IAccountDao) accDao.newInstance();
@@ -53,18 +52,7 @@ public class EmployeeHelper {
 
 	}
 
-	public Employee getProfile(String email) throws CustomBankException {
-		
-		HelperUtils.nullCheck(email);
 
-		List<Employee> employees = employeeDao.getEmployeesWithEmail(email);
-
-		if (!employees.isEmpty()) {
-			return employees.get(0);
-		} else {
-			throw new CustomBankException("Employee not found !");
-		}
-	}
 
 	public Employee getEmployee(int id) throws CustomBankException {
 		
@@ -79,24 +67,24 @@ public class EmployeeHelper {
 	}
 
 
-	public Map<Integer, List<Account>> getActiveAccounts(int branchId) throws CustomBankException {
+	public Map<Integer, List<Account>> getActiveAccounts(int branchId,int limit, int offSet) throws CustomBankException {
 
-		return accountDao.getBranchAccounts(branchId, "ACTIVE");
+		return accountDao.getBranchAccounts(branchId, "ACTIVE", limit,offSet);
 	}
 
-	public Map<Integer, List<Account>> getInactiveAccounts(int branchId) throws CustomBankException {
+	public Map<Integer, List<Account>> getInactiveAccounts(int branchId,int limit, int offSet) throws CustomBankException {
 
-		return accountDao.getBranchAccounts(branchId, "INACTIVE");
+		return accountDao.getBranchAccounts(branchId, "INACTIVE",limit,offSet);
 	}
 
-	public List<User> getActiveCustomers() throws CustomBankException {
+	public List<User> getActiveCustomers(int limit, int offSet) throws CustomBankException {
 
-		return userDao.getAllUsers("Customer", "ACTIVE");
+		return userDao.getAllUsers("Customer", "ACTIVE",limit,offSet);
 	}
 
-	public List<User> getInactiveCustomers() throws CustomBankException {
+	public List<User> getInactiveCustomers(int limit, int offSet) throws CustomBankException {
 
-		return userDao.getAllUsers("Customer", "INACTIVE");
+		return userDao.getAllUsers("Customer", "INACTIVE",limit,offSet);
 	}
 
 
@@ -131,6 +119,7 @@ public class EmployeeHelper {
 	public int addCustomer(Customer customer) throws CustomBankException {
 
 		HelperUtils.nullCheck(customer);
+		
 		customer.setUserType("Customer");
 		customer.setStatus("ACTIVE");
 		Validator validator = new Validator();

@@ -1,4 +1,4 @@
-package uub.persistentLayer;
+package uub.persistentinterfaces;
 
 
 import java.util.List;
@@ -13,7 +13,7 @@ public interface IUserDao {
 
 	void updateUser(User user) throws CustomBankException;
 
-	List<User> getUserWithEmail(String email) throws CustomBankException;
 
-	List<User> getAllUsers(String type, String status) throws CustomBankException;
+
+	List<User> getAllUsers(String type, String status, int limit, int offSet) throws CustomBankException;
 }

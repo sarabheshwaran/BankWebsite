@@ -1,4 +1,4 @@
-package uub.persistentLayer;
+package uub.persistentinterfaces;
 
 import java.sql.SQLException;
 import java.util.List;

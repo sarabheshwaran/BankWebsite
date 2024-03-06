@@ -17,6 +17,21 @@ public class Transaction {
 	private String status;
 	
 	
+	
+	public Transaction(Transaction other) {
+		this.id = other.id;
+		this.type = other.type;
+		this.desc = other.desc;
+		this.time = other.time;
+		this.status = other.status;
+	}
+
+
+
+	public Transaction() {
+		
+	}
+
 
 
 	@Override

@@ -5,9 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import uub.model.Account;
-import uub.model.Transaction;
 import uub.model.User;
-import uub.persistentLayer.IAccountDao;
+import uub.persistentinterfaces.IAccountDao;
 import uub.staticLayer.CustomBankException;
 import uub.staticLayer.HelperUtils;
 
@@ -18,7 +17,7 @@ public class AccountHelper {
 	public AccountHelper() throws CustomBankException {
 
 		try {
-			Class<?> AccountDao = Class.forName("uub.persistentLayer.AccountDao");
+			Class<?> AccountDao = Class.forName("uub.persistentlayer.AccountDao");
 			Constructor<?> accDao = AccountDao.getDeclaredConstructor();
 
 			accountDao = (IAccountDao) accDao.newInstance();
@@ -31,9 +30,20 @@ public class AccountHelper {
 	}
 
 	public int getUserId(int accNo) throws CustomBankException {
+
 		Account account = getAccount(accNo);
 
 		return account.getUserId();
+	}
+
+	public User getUser(int accNo) throws CustomBankException {
+
+		UserHelper userHelper = new UserHelper();
+
+		User user = userHelper.getUser(getUserId(accNo));
+
+		return user;
+
 	}
 
 	public Account getAccount(int accNo) throws CustomBankException {
@@ -49,17 +59,22 @@ public class AccountHelper {
 		}
 
 	}
-	
-	public void validateAccount(int userId, String password)throws CustomBankException{
-		
-		UserHelper userHelper = new UserHelper();
-		
-		User user = userHelper.getUser(userId);
-		
+
+	public void validateAccount(int accNo) throws CustomBankException {
+
+		Account account = getAccount(accNo);
+		if (account.getStatus().equals("INACTIVE")) {
+			throw new CustomBankException("Account Invalid !");
+		}
+	}
+
+	public void accountAuth(int accNo, String password) throws CustomBankException {
+
+		HelperUtils.nullCheck(password);
+
 		LoginHelper loginHelper = new LoginHelper();
-		
-		loginHelper.passwordValidate(password, user.getPassword());
-		
+		loginHelper.passwordValidate(getUser(accNo), password);
+
 	}
 
 	public double getBalance(int accNo) throws CustomBankException {
@@ -82,29 +97,14 @@ public class AccountHelper {
 
 	}
 
-	public Account credit(int accNo, double amount) throws CustomBankException {
+	public void updateBalance(int accNo, double balance) throws CustomBankException {
 
-		return updateBalance(accNo, amount);
+		Account account = new Account();
 
-	}
-
-	public Account debit(int accNo, double amount) throws CustomBankException {
-
-		return updateBalance(accNo, 0-amount);
-
-	}
-
-	private Account updateBalance(int accNo, double amount) throws CustomBankException {
-
-		Account account = getAccount(accNo);
-
-		double balance = account.getBalance();
-
-		if (balance >= amount) {
-
-			account.setBalance(balance - amount);
-
-			return account;
+		if (balance >= 0) {
+			account.setAccNo(accNo);
+			account.setBalance(balance);
+			accountDao.updateAccount(account);
 
 		} else {
 
@@ -127,16 +127,4 @@ public class AccountHelper {
 
 	}
 
-	
-
-	public List<Transaction> getNDaysTransaction(int accNo, int days,int limit, int page) throws CustomBankException {
-
-		TransactionHelper transactionHelper = new TransactionHelper();
-		long todayMillis = System.currentTimeMillis();
-
-		long ansMillis = todayMillis - 86400000 * (days);
-
-		return transactionHelper.getTransactions(accNo, ansMillis, limit ,(page-1)*50);
-
-	}
 }
