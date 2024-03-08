@@ -5,9 +5,9 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import uub.logicalLayer.LoginHelper;
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.HelperUtils;
+import uub.logicallayer.LoginHelper;
+import uub.staticlayer.CustomBankException;
+import uub.staticlayer.HelperUtils;
 
 public class Runner {
 
@@ -55,11 +55,11 @@ public class Runner {
 				int login = loginHelper.login(id, password);
 				
 				switch (login) {
-				case 1 :{
+				case 0 :{
 					logger.info("Welcome Customer");
 					new CustomerPage(id);
 					break;}
-				case 2 :
+				case 1 :
 					logger.info("Welcome Employee");
 					new EmployeePage(id);
 					break;
@@ -78,9 +78,12 @@ public class Runner {
 			default:
 			}}
 			catch(CustomBankException e) {
-				logger.warning(e.getMessage());
-				e.printStackTrace();
+				Throwable cause = e.getCause();
 				
+				logger.severe(e.getMessage());
+				if(cause != null) {
+					System.out.println(cause.getMessage());
+				}
 				
 			}
 			catch(InputMismatchException e) {

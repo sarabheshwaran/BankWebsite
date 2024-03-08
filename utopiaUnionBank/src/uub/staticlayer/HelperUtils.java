@@ -1,4 +1,4 @@
-package uub.staticLayer;
+package uub.staticlayer;
 
 //import java.io.IOException;
 //import java.util.logging.ConsoleHandler;
@@ -34,12 +34,7 @@ public class HelperUtils {
 
 	}
 
-	public static int lengthOfString(String input) throws CustomBankException {
 
-		nullCheck(input);
-
-		return input.length();
-	}
 
 	public static void formatLogger() {
 

@@ -12,27 +12,26 @@ import java.util.Map;
 
 import uub.model.Employee;
 import uub.persistentinterfaces.IEmployeeDao;
-import uub.staticLayer.ConnectionManager;
-import uub.staticLayer.CustomBankException;
+import uub.staticlayer.ConnectionManager;
+import uub.staticlayer.CustomBankException;
 
 public class EmployeeDao implements IEmployeeDao {
 
 	@Override
 	public List<Employee> getEmployees(int id) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.ID = " + id
-				+ " AND STATUS = 'ACTIVE'";
+		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.ID = " + id;
 
 		return getEmployees(getQuery);
 
 	}
 
 	@Override
-	public Map<Integer, List<Employee>> getEmployeesWithBranch(int branchId, int limit, int offSet)
+	public Map<Integer, Map<Integer,Employee>> getEmployeesWithBranch(int branchId, int limit, int offSet)
 			throws CustomBankException {
 
 		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.BRANCH_ID = "
-				+ branchId + " AND STATUS = 'ACTIVE'" + " LIMIT " + limit + " OFFSET " + offSet;
+				+ branchId + " AND STATUS = 1" + " LIMIT " + limit + " OFFSET " + offSet;
 
 		return getEmployeesOfBranch(getQuery);
 
@@ -41,59 +40,75 @@ public class EmployeeDao implements IEmployeeDao {
 	@Override
 	public void addEmployee(List<Employee> employees) throws CustomBankException {
 
-		Connection connection = ConnectionManager.getConnection();
+		Connection connection = null;
+		try {
 
-		String addQuery1 = "INSERT INTO USER (NAME,EMAIL,PHONE,DOB,GENDER,PASSWORD,USER_TYPE,STATUS) VALUES (?,?,?,?,?,?,?,?)";
-		String addQuery2 = "INSERT INTO EMPLOYEE VALUES (?,?,?)";
-
-		try (PreparedStatement statement = connection.prepareStatement(addQuery1,
-				PreparedStatement.RETURN_GENERATED_KEYS);
-				PreparedStatement statement2 = connection.prepareStatement(addQuery2)) {
+			connection = ConnectionManager.getConnection();
 
 			connection.setAutoCommit(false);
-			for (Employee employee : employees) {
-				statement.setObject( 1, employee.getName());
-				statement.setObject( 2, employee.getEmail());
-				statement.setObject( 3, employee.getPhone());
-				statement.setObject( 4, employee.getdOB());
-				statement.setObject( 5, employee.getGender());
-				statement.setObject( 6, employee.getPassword());
-				statement.setObject( 7, employee.getUserType());
-				statement.setObject( 8, employee.getStatus());
-				statement.addBatch();
-			}
-			statement.executeBatch();
+			
+			String addQuery1 = "INSERT INTO USER (NAME,EMAIL,PHONE,DOB,GENDER,PASSWORD,USER_TYPE,STATUS) VALUES (?,?,?,?,?,?,?,?)";
+			String addQuery2 = "INSERT INTO EMPLOYEE VALUES (?,?,?)";
 
-			try (ResultSet resultSet = statement.getGeneratedKeys()) {
-				int index = 0;
-				while (resultSet.next()) {
+			try (PreparedStatement statement = connection.prepareStatement(addQuery1,
+					PreparedStatement.RETURN_GENERATED_KEYS);
+					PreparedStatement statement2 = connection.prepareStatement(addQuery2)) {
 
-					int id = resultSet.getInt(1);
-					Employee employee = employees.get(index);
-					statement2.setObject( 1, id);
-					statement2.setObject( 2, employee.getRole());
-					statement2.setObject( 3, employee.getBranchId());
+				for (Employee employee : employees) {
+					statement.setObject(1, employee.getName());
+					statement.setObject(2, employee.getEmail());
+					statement.setObject(3, employee.getPhone());
+					statement.setObject(4, employee.getdOB());
+					statement.setObject(5, employee.getGender());
+					statement.setObject(6, employee.getPassword());
+					statement.setObject(7, employee.getUserType());
+					statement.setObject(8, employee.getStatus());
+					statement.addBatch();
+				}
+				statement.executeBatch();
 
-					statement2.addBatch();
-					index++;
+				try (ResultSet resultSet = statement.getGeneratedKeys()) {
+					int index = 0;
+					while (resultSet.next()) {
+
+						int id = resultSet.getInt(1);
+						Employee employee = employees.get(index);
+						statement2.setObject(1, id);
+						statement2.setObject(2, employee.getRole());
+						statement2.setObject(3, employee.getBranchId());
+
+						statement2.addBatch();
+						index++;
+					}
+
+					statement2.executeBatch();
+
 				}
 
-				statement2.executeBatch();
-
-				connection.commit();
 			}
 
+			connection.commit();
+
 		} catch (SQLException e) {
+			
+			
 			try {
-				connection.rollback();
-			} catch (SQLException e1) {
-				throw new CustomBankException(e.getMessage());
+				if (connection != null) {
+					connection.rollback();
+				}
+			} catch (SQLException rbException) {
+				e.addSuppressed(rbException);
 
 			}
 			throw new CustomBankException(e.getMessage());
+		
+		
 		} finally {
 			try {
-				connection.close();
+				if (connection != null) {
+					connection.setAutoCommit(true);
+					connection.close();
+				}
 			} catch (SQLException e1) {
 				throw new CustomBankException(e1.getMessage());
 
@@ -142,9 +157,9 @@ public class EmployeeDao implements IEmployeeDao {
 		return employees;
 	}
 
-	private Map<Integer, List<Employee>> getEmployeesOfBranch(String query) throws CustomBankException {
+	private Map<Integer, Map<Integer,Employee>> getEmployeesOfBranch(String query) throws CustomBankException {
 
-		Map<Integer, List<Employee>> employeeMap = new HashMap<Integer, List<Employee>>();
+		Map<Integer, Map<Integer,Employee>> employeeMap = new HashMap<Integer, Map<Integer,Employee>>();
 
 		try (Connection connection = ConnectionManager.getConnection();
 				Statement statement = connection.createStatement()) {
@@ -155,16 +170,16 @@ public class EmployeeDao implements IEmployeeDao {
 
 				Employee employee;
 
-				int id = resultSet.getInt("ID");
+				int id = resultSet.getInt("BRANCH_ID");
 
 				if (!employeeMap.containsKey(id)) {
 
-					employeeMap.put(id, new ArrayList<Employee>());
+					employeeMap.put(id, new HashMap<Integer,Employee>());
 
 				}
 				id = resultSet.getInt("ID");
 				employee = mapEmployee(resultSet);
-				employeeMap.get(id).add(employee);
+				employeeMap.get(id).put(employee.getId(),employee);
 			}
 
 		} catch (SQLException e) {
@@ -243,10 +258,10 @@ public class EmployeeDao implements IEmployeeDao {
 			statement.setObject(index++, employee.getUserType());
 		}
 		if (employee.getStatus() != null) {
-			statement.setObject(index++, employee.getStatus());
+			statement.setObject(index++, employee.getStatus().getStatus());
 		}
 		if (employee.getRole() != null) {
-			statement.setObject(index++, employee.getRole());
+			statement.setObject(index++, employee.getRole().getRole());
 		}
 		if (employee.getBranchId() != 0) {
 			statement.setObject(index++, employee.getBranchId());
@@ -268,9 +283,9 @@ public class EmployeeDao implements IEmployeeDao {
 		employee.setdOB(resultSet.getLong("USER.DOB"));
 		employee.setGender(resultSet.getString("USER.GENDER"));
 		employee.setPassword(resultSet.getString("USER.PASSWORD"));
-		employee.setUserType(resultSet.getString("USER.USER_TYPE"));
-		employee.setStatus(resultSet.getString("USER.STATUS"));
-		employee.setRole(resultSet.getString("EMPLOYEE.ROLE"));
+		employee.setUserType(resultSet.getInt("USER.USER_TYPE"));
+		employee.setStatus(resultSet.getInt("USER.STATUS"));
+		employee.setRole(resultSet.getInt("EMPLOYEE.ROLE"));
 		employee.setBranchId(resultSet.getInt("EMPLOYEE.BRANCH_ID"));
 
 		return employee;

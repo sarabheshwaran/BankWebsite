@@ -1,20 +1,24 @@
 package uub.model;
 
+import uub.enums.EmployeeRole;
+import uub.enums.UserStatus;
+import uub.enums.UserType;
+
 public class Employee extends User{
 
 	
-	private String role;
+	private EmployeeRole role;
 	private int branchId;
 	
 	
 	public Employee() {
 		super();
-		super.setUserType("Employee");
+		super.setUserType(UserType.EMPLOYEE);
 	}
 
 
 	public Employee(int id, String name, String email, String phone, long dOB, String gender, String password,
-			String userType, String status,String role, int branchId) {
+			UserType userType, UserStatus status,EmployeeRole role, int branchId) {
 		super(id, name, email, phone, dOB, gender, password, userType, status);
 		
 		this.branchId= branchId;
@@ -27,10 +31,13 @@ public class Employee extends User{
 	}
 	
 	
-	public String getRole() {
+	public EmployeeRole getRole() {
 		return role;
 	}
-	public void setRole(String role) {
+	public void setRole(int role) {
+		this.role = EmployeeRole.valueOf(role);
+	}
+	public void setRole(EmployeeRole role) {
 		this.role = role;
 	}
 	public int getBranchId() {

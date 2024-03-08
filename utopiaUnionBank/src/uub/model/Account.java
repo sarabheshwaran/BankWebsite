@@ -1,15 +1,17 @@
 package uub.model;
 
-import uub.staticLayer.HelperUtils;
+import uub.enums.AccountStatus;
+import uub.enums.AccountType;
+import uub.staticlayer.HelperUtils;
 
 public class Account {
 	
 	private int accNo;
 	private int userId;
 	private int branchId;
-	private String type;
+	private AccountType type;
 	private double balance = -1;
-	private String status;
+	private AccountStatus status;
 	
 	
 	
@@ -38,11 +40,15 @@ public class Account {
 	public void setBranchId(int branchId) {
 		this.branchId = branchId;
 	}
-	public String getType() {
+	public AccountType getType() {
 		return type;
 	}
-	public void setType(String type) {
+	public void setType(AccountType type) {
 		this.type = type;
+	}
+	
+	public void setType(int type) {
+		this.type =AccountType.valueOf(type);
 	}
 	public double getBalance() {
 		return balance;
@@ -50,11 +56,15 @@ public class Account {
 	public void setBalance(double balance) {
 		this.balance = HelperUtils.doubleFormat(balance);
 	}
-	public String getStatus() {
+	public AccountStatus getStatus() {
 		return status;
 	}
-	public void setStatus(String string) {
-		this.status = string;
+	public void setStatus( AccountStatus status) {
+		this.status = status;
+	}
+	
+	public void setStatus(int status) {
+		this.status =AccountStatus.valueOf(status);
 	}
 	
 	

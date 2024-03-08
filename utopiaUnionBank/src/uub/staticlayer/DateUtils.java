@@ -1,4 +1,4 @@
-package uub.staticLayer;
+package uub.staticlayer;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -7,10 +7,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class DateUtils {
-
-	public static void main(String[] args) throws CustomBankException {
-		System.out.println(calculateAge(111112345423L));
-	}
 
 	
 	public static String formatDate(long millis) {

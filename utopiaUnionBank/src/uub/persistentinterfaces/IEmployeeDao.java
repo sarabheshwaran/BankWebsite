@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import uub.model.Employee;
-import uub.staticLayer.CustomBankException;
+import uub.staticlayer.CustomBankException;
 
 public interface IEmployeeDao {
 
@@ -19,7 +19,7 @@ public interface IEmployeeDao {
 	List<Employee> getEmployees(int id) throws CustomBankException;
 
 
-	Map<Integer, List<Employee>> getEmployeesWithBranch(int branchId, int limit, int offSet) throws CustomBankException;
+	Map<Integer, Map<Integer,Employee>> getEmployeesWithBranch(int branchId, int limit, int offSet) throws CustomBankException;
 
 
 

@@ -6,13 +6,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import uub.model.Branch;
 import uub.persistentinterfaces.IBranchDao;
-import uub.staticLayer.ConnectionManager;
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.HelperUtils;
+import uub.staticlayer.ConnectionManager;
+import uub.staticlayer.CustomBankException;
+import uub.staticlayer.HelperUtils;
 
 public class BranchDao implements IBranchDao {
 
@@ -21,29 +23,43 @@ public class BranchDao implements IBranchDao {
 	public BranchDao() throws CustomBankException {
 		connection = ConnectionManager.getConnection();
 	}
-	@Override
-	public List<Branch> getBranchWithId(int id) throws CustomBankException {
-		String getQuery = "SELECT * FROM BRANCH WHERE ID = " + id;
-		return getBranches(getQuery);
-	}
 
 	@Override
-	public List<Branch> getBranches() throws CustomBankException {
+	public Map<Integer,Branch> getBranches() throws CustomBankException {
+
+		Map<Integer,Branch> branches = new HashMap<Integer, Branch>();
+
 		String getQuery = "SELECT * FROM BRANCH ";
-		return getBranches(getQuery);
-	}
-	
-
-	private List<Branch> getBranches(String query) throws CustomBankException {
-
-		List<Branch> branches = new ArrayList<>();
-
-		HelperUtils.nullCheck(query);
 
 		try (Connection connection = ConnectionManager.getConnection();
 				Statement statement = connection.createStatement();) {
 
-			ResultSet resultSet = statement.executeQuery(query);
+			ResultSet resultSet = statement.executeQuery(getQuery);
+
+			while (resultSet.next()) {
+				Branch branch = mapBranch(resultSet);
+				branches.put(branch.getId(),branch);
+			}
+
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+		return branches;
+
+	}
+	
+	public List<Branch> getBranch(int id) throws CustomBankException {
+
+		List<Branch> branches = new ArrayList<>();
+
+		String getQuery = "SELECT * FROM BRANCH WHERE ID = " + id;
+
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(getQuery);) {
+
+			statement.setInt(1, id);
+			ResultSet resultSet = statement.executeQuery();
 
 			while (resultSet.next()) {
 				Branch branch = mapBranch(resultSet);
@@ -56,27 +72,6 @@ public class BranchDao implements IBranchDao {
 
 		return branches;
 
-	}
-
-	@Override
-	public int getLastId() throws CustomBankException {
-
-		int lastId = -1;
-
-		String query = "SELECT MAX(ID) AS max_id FROM BRANCH";
-
-		try (PreparedStatement statement = connection.prepareStatement(query)) {
-			ResultSet resultSet = statement.executeQuery();
-
-			if (resultSet.next()) {
-				lastId = resultSet.getInt("max_id");
-			}
-
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-
-		return lastId;
 	}
 
 	@Override

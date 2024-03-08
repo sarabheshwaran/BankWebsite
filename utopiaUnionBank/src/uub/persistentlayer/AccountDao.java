@@ -10,11 +10,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import uub.enums.AccountStatus;
+import uub.enums.AccountType;
 import uub.model.Account;
 import uub.persistentinterfaces.IAccountDao;
-import uub.staticLayer.ConnectionManager;
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.HelperUtils;
+import uub.staticlayer.ConnectionManager;
+import uub.staticlayer.CustomBankException;
+import uub.staticlayer.HelperUtils;
 
 public class AccountDao implements IAccountDao {
 
@@ -26,20 +28,20 @@ public class AccountDao implements IAccountDao {
 
 
 	@Override
-	public List<Account> getUserAccounts(int userId, String status) throws CustomBankException {
+	public List<Account> getUserAccounts(int userId, AccountStatus status) throws CustomBankException {
 
 		String getQuery = "SELECT * FROM ACCOUNTS JOIN USER ON USER.ID = ACCOUNTS.USER_ID WHERE USER_ID = " + userId
-				+ " AND ACCOUNTS.STATUS = '" + status + "'";
+				+ " AND ACCOUNTS.STATUS = " + status.getStatus() ;
 
 		return getAccounts(getQuery);
 
 	}
 
 	@Override
-	public Map<Integer, List<Account>> getBranchAccounts(int branchId, String status, int limit, int offSet) throws CustomBankException {
+	public Map<Integer, Map<Integer,Account>> getBranchAccounts(int branchId, AccountStatus status, int limit, int offSet) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM ACCOUNTS JOIN USER ON USER.ID = ACCOUNTS.USER_ID WHERE  ACCOUNTS.STATUS = '"
-				+ status + "' AND BRANCH_ID = " + branchId + " LIMIT "+limit+" OFFSET "+offSet;
+		String getQuery = "SELECT * FROM ACCOUNTS JOIN USER ON USER.ID = ACCOUNTS.USER_ID WHERE  ACCOUNTS.STATUS = "
+				+ status.getStatus() + " AND BRANCH_ID = " + branchId + " LIMIT "+limit+" OFFSET "+offSet;
 
 		return getAccountsWithUser(getQuery);
 
@@ -70,7 +72,7 @@ public class AccountDao implements IAccountDao {
 			for (Account account : accounts) {
 				statement.setObject( 1, account.getUserId());
 				statement.setObject( 2, account.getBranchId());
-				statement.setObject( 3, account.getType());
+				statement.setObject( 3, account.getType().getType());
 				statement.setObject( 4, account.getBalance());
 				statement.setObject( 5, account.getStatus());
 
@@ -130,11 +132,11 @@ public class AccountDao implements IAccountDao {
 
 	}
 
-	private Map<Integer, List<Account>> getAccountsWithUser(String query) throws CustomBankException {
+	private Map<Integer, Map<Integer,Account>> getAccountsWithUser(String query) throws CustomBankException {
 		
 		HelperUtils.nullCheck(query);
 
-		Map<Integer, List<Account>> accountMap = new HashMap<Integer, List<Account>>();
+		Map<Integer, Map<Integer,Account>> accountMap = new HashMap<Integer, Map<Integer,Account>>();
 
 		try (Statement statement = connection.createStatement()) {
 
@@ -147,12 +149,12 @@ public class AccountDao implements IAccountDao {
 
 				if (!accountMap.containsKey(id)) {
 
-					accountMap.put(id, new ArrayList<Account>());
+					accountMap.put(id, new HashMap<Integer,Account>());
 
 				}
 				id = resultSet.getInt("USER_ID");
 				account = mapAccount(resultSet);
-				accountMap.get(id).add(account);
+				accountMap.get(id).put(account.getAccNo(),account);
 
 			}
 
@@ -169,9 +171,9 @@ public class AccountDao implements IAccountDao {
 		account.setAccNo(resultSet.getInt("ACC_NO"));
 		account.setUserId(resultSet.getInt("USER_ID"));
 		account.setBranchId(resultSet.getInt("BRANCH_ID"));
-		account.setType(resultSet.getString("TYPE"));
+		account.setType(AccountType.valueOf(resultSet.getInt("TYPE")));
 		account.setBalance(resultSet.getDouble("BALANCE"));
-		account.setStatus(resultSet.getString("STATUS"));
+		account.setStatus(AccountStatus.valueOf(resultSet.getInt("STATUS")));
 
 		return account;
 	}
@@ -219,7 +221,7 @@ public class AccountDao implements IAccountDao {
 			statement.setObject(index++, account.getBalance());
 		}
 		if (account.getStatus() != null) {
-			statement.setObject(index++, account.getStatus());
+			statement.setObject(index++, account.getStatus().getStatus());
 		}
 		if (account.getAccNo() != 0) {
 			statement.setInt(index, account.getAccNo());

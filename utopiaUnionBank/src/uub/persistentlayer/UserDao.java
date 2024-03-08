@@ -8,18 +8,20 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import uub.enums.UserStatus;
+import uub.enums.UserType;
 import uub.model.User;
 import uub.persistentinterfaces.IUserDao;
-import uub.staticLayer.ConnectionManager;
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.HelperUtils;
+import uub.staticlayer.ConnectionManager;
+import uub.staticlayer.CustomBankException;
+import uub.staticlayer.HelperUtils;
 
 public class UserDao implements IUserDao {
 
 	@Override
-	public List<User> getUserWithId(int userId) throws CustomBankException {
+	public List<User> getUserWithId(int userId, UserStatus status) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM USER WHERE ID = '" + userId + "'";
+		String getQuery = "SELECT * FROM USER WHERE ID = '" + userId + "' AND STATUS = "+ status.getStatus();
 
 		return getUsers(getQuery);
 
@@ -27,9 +29,9 @@ public class UserDao implements IUserDao {
 
 
 	@Override
-	public List<User> getAllUsers(String type, String status, int limit , int offSet ) throws CustomBankException {
+	public List<User> getAllUsers(UserType type, UserStatus status, int limit , int offSet ) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM USER WHERE STATUS = '" + status + "' AND USER_TYPE = '" + type + "'" +" LIMIT " + limit + " OFFSET " + offSet ;
+		String getQuery = "SELECT * FROM USER WHERE STATUS = " + status.getStatus() + " AND USER_TYPE = '" + type.getType() + "'" +" LIMIT " + limit + " OFFSET " + offSet ;
 
 		return getUsers(getQuery);
 
@@ -135,10 +137,10 @@ public class UserDao implements IUserDao {
 			statement.setObject(index++, user.getPassword());
 		}
 		if (user.getUserType() != null) {
-			statement.setObject(index++, user.getUserType());
+			statement.setObject(index++, user.getUserType().getType());
 		}
 		if (user.getStatus() != null) {
-			statement.setObject(index++, user.getStatus());
+			statement.setObject(index++, user.getStatus().getStatus());
 		}
 		if (user.getId() != 0) {
 			statement.setObject(index++, user.getId());
@@ -157,8 +159,8 @@ public class UserDao implements IUserDao {
 		user.setdOB(resultSet.getLong("USER.DOB"));
 		user.setGender(resultSet.getString("USER.GENDER"));
 		user.setPassword(resultSet.getString("USER.PASSWORD"));
-		user.setUserType(resultSet.getString("USER.USER_TYPE"));
-		user.setStatus(resultSet.getString("USER.STATUS"));
+		user.setUserType(resultSet.getInt("USER.USER_TYPE"));
+		user.setStatus(resultSet.getInt("USER.STATUS"));
 
 		return user;
 

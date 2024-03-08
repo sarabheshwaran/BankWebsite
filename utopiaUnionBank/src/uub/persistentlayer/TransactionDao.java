@@ -10,17 +10,17 @@ import java.util.List;
 
 import uub.model.Transaction;
 import uub.persistentinterfaces.ITransactionDao;
-import uub.staticLayer.ConnectionManager;
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.HelperUtils;
+import uub.staticlayer.ConnectionManager;
+import uub.staticlayer.CustomBankException;
 
 public class TransactionDao implements ITransactionDao {
 
 	@Override
-	public List<Transaction> getTransactions(int accNo, long from, long to ,int limit, int offSet) throws CustomBankException {
+	public List<Transaction> getTransactions(int accNo, long from, long to, int limit, int offSet)
+			throws CustomBankException {
 
-		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO =" + accNo + " AND TIME BETWEEN " + from +" AND "+ to 
-				+" ORDER BY ID DESC  LIMIT  "+ limit + " OFFSET " + offSet ;
+		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO =" + accNo + " AND TIME BETWEEN " + from + " AND "
+				+ to + " ORDER BY ID DESC  LIMIT  " + limit + " OFFSET " + offSet;
 
 		return getTransactions(getQuery);
 
@@ -30,11 +30,35 @@ public class TransactionDao implements ITransactionDao {
 	public List<Transaction> getTransactionsOfUser(int userId, long from, long to, int limit, int offSet)
 			throws CustomBankException {
 
-		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO =" + userId + " AND TIME BETWEEN " + from +" AND "+ to 
-				+" ORDER BY ID DESC  LIMIT  "+  limit + " OFFSET " + offSet ;
+		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO =" + userId + " AND TIME BETWEEN " + from + " AND "
+				+ to + " ORDER BY ID DESC  LIMIT  " + limit + " OFFSET " + offSet;
 
 		return getTransactions(getQuery);
 
+	}
+	
+
+	@Override
+	public int getLastId() throws CustomBankException {
+
+		int lastId = -1;
+
+		String query = "SELECT MAX(ID) AS max_id FROM TRANSACTION";
+
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(query)) {
+
+			ResultSet resultSet = statement.executeQuery();
+
+			if (resultSet.next()) {
+				lastId = resultSet.getInt("max_id");
+			}
+
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+		return lastId;
 	}
 
 	private List<Transaction> getTransactions(String query) throws CustomBankException {
@@ -57,72 +81,110 @@ public class TransactionDao implements ITransactionDao {
 		return transactions;
 	}
 
-	@Override
-	public void addTransaction(Transaction transaction) throws CustomBankException {
 
-		HelperUtils.nullCheck(transaction);
+	public void makeTransaction(List<Transaction> transactions) throws CustomBankException {
+
+		Connection connection = null;
+		try {
+			connection = ConnectionManager.getConnection();
+
+			connection.setAutoCommit(false);
+
+			addTransaction(connection, transactions);
+
+			updateAccount(connection, transactions);
+
+			connection.commit();
+
+		} catch (SQLException e) {
+			try {
+				if (connection != null) {
+					connection.rollback();
+				}
+				
+			
+			} catch (SQLException rbException) {
+				e.addSuppressed(rbException);
+			}
+			
+			throw new CustomBankException("Transaction roll-backed",e);
+		} finally {
+			try {
+				if (connection != null) {
+					connection.setAutoCommit(true);
+					connection.close();
+				}
+			} catch (SQLException e) {
+				throw new CustomBankException(e.getMessage());
+			}
+		}
+
+	}
+
+	private void addTransaction(Connection connection, List<Transaction> transactions) throws SQLException {
 
 		String addQuery = "INSERT INTO TRANSACTION (ID, USER_ID, ACC_NO, TRANSACTION_ACC, TYPE, AMOUNT, OPENING_BAL, CLOSING_BAL, DESCRIPTION, TIME, STATUS) "
 				+ "VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-		
-		try (Connection connection = ConnectionManager.getConnection();
-				PreparedStatement statement = connection.prepareStatement(addQuery)) {
-			statement.setObject(1, transaction.getId());
-			statement.setObject(2, transaction.getUserId());
-			statement.setObject(3, transaction.getAccNo());
-			statement.setObject(4, transaction.getTransactionAcc());
-			statement.setObject(5, transaction.getType());
-			statement.setObject(6, transaction.getAmount());
-			statement.setObject(7, transaction.getOpeningBal());
-			statement.setObject(8, transaction.getClosingBal());
-			statement.setObject(9, transaction.getDesc());
-			statement.setObject(10, transaction.getTime());
-			statement.setObject(11, transaction.getStatus());
+		try (PreparedStatement statement = connection.prepareStatement(addQuery)) {
 
-			statement.executeUpdate();
+			for (Transaction transaction : transactions) {
 
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-	}
+				statement.setObject(1, transaction.getId());
+				statement.setObject(2, transaction.getUserId());
+				statement.setObject(3, transaction.getAccNo());
+				statement.setObject(4, transaction.getTransactionAcc());
+				statement.setObject(5, transaction.getType().getType());
+				statement.setObject(6, transaction.getAmount());
+				statement.setObject(7, transaction.getOpeningBal());
+				statement.setObject(8, transaction.getClosingBal());
+				statement.setObject(9, transaction.getDesc());
+				statement.setObject(10, transaction.getTime());
+				statement.setObject(11, transaction.getStatus().getStatus());
 
-	@Override
-	public int getLastId() throws CustomBankException {
-
-		int lastId = -1;
-
-		String query = "SELECT MAX(ID) AS max_id FROM TRANSACTION";
-
-		try (Connection connection = ConnectionManager.getConnection();
-			PreparedStatement statement = connection.prepareStatement(query)) {
-			
-			ResultSet resultSet = statement.executeQuery();
-
-			if (resultSet.next()) {
-				lastId = resultSet.getInt("max_id");
+				statement.addBatch();
 			}
+			statement.executeBatch();
 
 		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
+			throw e;
+		}
+	}
+
+	private void updateAccount(Connection connection, List<Transaction> transactions) throws SQLException {
+
+		String updateQuery = "UPDATE ACCOUNTS SET BALANCE = ? WHERE ACC_NO = ?";
+
+		try (PreparedStatement statement = connection.prepareStatement(updateQuery)) {
+
+			for (Transaction transaction : transactions) {
+
+				statement.setDouble(1, transaction.getClosingBal());
+				statement.setInt(2, transaction.getAccNo());
+				statement.addBatch();
+			}
+			statement.executeBatch();
+
+		} catch (SQLException e) {
+			throw e;
 		}
 
-		return lastId;
 	}
+
 
 	private Transaction mapTransaction(ResultSet resultSet) throws SQLException {
 		Transaction transaction = new Transaction();
 
-		transaction.setId(resultSet.getInt("ID"));
+		transaction.setId(resultSet.getString("ID"));
 		transaction.setUserId(resultSet.getInt("USER_ID"));
 		transaction.setAccNo(resultSet.getInt("ACC_NO"));
 		transaction.setTransactionAcc(resultSet.getInt("TRANSACTION_ACC"));
-		transaction.setType(resultSet.getString("TYPE"));
+		transaction.setType(resultSet.getInt("TYPE"));
 		transaction.setAmount(resultSet.getDouble("AMOUNT"));
 		transaction.setOpeningBal(resultSet.getDouble("OPENING_BAL"));
 		transaction.setClosingBal(resultSet.getDouble("CLOSING_BAL"));
 		transaction.setDesc(resultSet.getString("DESCRIPTION"));
 		transaction.setTime(resultSet.getLong("TIME"));
-		transaction.setStatus(resultSet.getString("STATUS"));
+		transaction.setStatus(resultSet.getInt("STATUS"));
 
 		return transaction;
 	}

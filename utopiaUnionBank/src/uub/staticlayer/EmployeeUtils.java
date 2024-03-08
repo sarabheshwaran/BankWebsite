@@ -1,13 +1,9 @@
-package uub.logicalLayer;
+package uub.staticlayer;
 
 import java.util.regex.Pattern;
 
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.HelperUtils;
-
-public class Validator {
-
-	public boolean validateEmail(String email) throws CustomBankException {
+public class EmployeeUtils {
+	public static boolean validateEmail(String email) throws CustomBankException {
 
 		HelperUtils.nullCheck(email);
 		boolean ans = Pattern.matches("^[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z]{2,5}$", email);
@@ -19,7 +15,7 @@ public class Validator {
 		}
 	}
 
-	public boolean validatePhone(String phoneNo) throws CustomBankException {
+	public static boolean validatePhone(String phoneNo) throws CustomBankException {
 
 		HelperUtils.nullCheck(phoneNo);
 		boolean ans = Pattern.matches("[789]{1}\\d{9}", phoneNo);
@@ -32,7 +28,7 @@ public class Validator {
 
 	}
 
-	public boolean validatePass(String password) throws CustomBankException {
+	public static boolean validatePass(String password) throws CustomBankException {
 
 		HelperUtils.nullCheck(password);
 

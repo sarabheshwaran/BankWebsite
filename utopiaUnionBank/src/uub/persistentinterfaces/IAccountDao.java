@@ -3,8 +3,9 @@ package uub.persistentinterfaces;
 import java.util.List;
 import java.util.Map;
 
+import uub.enums.AccountStatus;
 import uub.model.Account;
-import uub.staticLayer.CustomBankException;
+import uub.staticlayer.CustomBankException;
 
 public interface IAccountDao {
 
@@ -13,14 +14,15 @@ public interface IAccountDao {
 	int updateAccount(Account account) throws CustomBankException;
 
 
-	List<Account> getUserAccounts(int userId, String status) throws CustomBankException;
 
 	List<Account> getAccount(int accNo) throws CustomBankException;
 
 
 
-	Map<Integer, List<Account>> getBranchAccounts(int branchId, String status, int limit, int offSet)
+	Map<Integer, Map<Integer,Account>> getBranchAccounts(int branchId, AccountStatus status, int limit, int offSet)
 			throws CustomBankException;
+
+	List<Account> getUserAccounts(int userId, AccountStatus status) throws CustomBankException;
 	
 
 

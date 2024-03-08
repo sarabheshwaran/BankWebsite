@@ -1,12 +1,13 @@
-package uub.logicalLayer;
+package uub.logicallayer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 
 import uub.model.Branch;
 import uub.persistentinterfaces.IBranchDao;
-import uub.staticLayer.CustomBankException;
+import uub.staticlayer.CustomBankException;
 
 public class BranchHelper {
 
@@ -30,20 +31,16 @@ public class BranchHelper {
 
 	}
 
-	public List<Branch> getAllBranches() throws CustomBankException {
+	public Map<Integer, Branch> getAllBranches() throws CustomBankException {
 
 		return branchDao.getBranches();
 	}
 
-	private int getId() throws CustomBankException {
-		
-		int id = branchDao.getLastId();
-		return id + 1;
-	}
+
 
 	public void addBranch(Branch branch) throws CustomBankException {
 
-		int id = getId();
+		int id = branch.getId();
 
 		branch.setId(id);
 		String ifsc = generateIFSC(id);

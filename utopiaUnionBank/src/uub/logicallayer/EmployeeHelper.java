@@ -1,10 +1,13 @@
-package uub.logicalLayer;
+package uub.logicallayer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 
+import uub.enums.AccountStatus;
+import uub.enums.UserStatus;
+import uub.enums.UserType;
 import uub.model.Account;
 import uub.model.Customer;
 import uub.model.Employee;
@@ -13,9 +16,10 @@ import uub.persistentinterfaces.IAccountDao;
 import uub.persistentinterfaces.ICustomerDao;
 import uub.persistentinterfaces.IEmployeeDao;
 import uub.persistentinterfaces.IUserDao;
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.HashEncoder;
-import uub.staticLayer.HelperUtils;
+import uub.staticlayer.CustomBankException;
+import uub.staticlayer.EmployeeUtils;
+import uub.staticlayer.HashEncoder;
+import uub.staticlayer.HelperUtils;
 
 public class EmployeeHelper {
 
@@ -67,24 +71,24 @@ public class EmployeeHelper {
 	}
 
 
-	public Map<Integer, List<Account>> getActiveAccounts(int branchId,int limit, int offSet) throws CustomBankException {
+	public Map<Integer, Map<Integer,Account>> getActiveAccounts(int branchId,int limit, int offSet) throws CustomBankException {
 
-		return accountDao.getBranchAccounts(branchId, "ACTIVE", limit,offSet);
+		return accountDao.getBranchAccounts(branchId, AccountStatus.ACTIVE, limit,offSet);
 	}
 
-	public Map<Integer, List<Account>> getInactiveAccounts(int branchId,int limit, int offSet) throws CustomBankException {
+	public Map<Integer, Map<Integer,Account>> getInactiveAccounts(int branchId,int limit, int offSet) throws CustomBankException {
 
-		return accountDao.getBranchAccounts(branchId, "INACTIVE",limit,offSet);
+		return accountDao.getBranchAccounts(branchId, AccountStatus.INACTIVE,limit,offSet);
 	}
 
 	public List<User> getActiveCustomers(int limit, int offSet) throws CustomBankException {
 
-		return userDao.getAllUsers("Customer", "ACTIVE",limit,offSet);
+		return userDao.getAllUsers(UserType.CUSTOMER,UserStatus.ACTIVE,limit,offSet);
 	}
 
 	public List<User> getInactiveCustomers(int limit, int offSet) throws CustomBankException {
 
-		return userDao.getAllUsers("Customer", "INACTIVE",limit,offSet);
+		return userDao.getAllUsers(UserType.CUSTOMER, UserStatus.INACTIVE,limit,offSet);
 	}
 
 
@@ -94,7 +98,7 @@ public class EmployeeHelper {
 		Account account = new Account();
 
 		account.setAccNo(accNo);
-		account.setStatus("ACTIVE");
+		account.setStatus(AccountStatus.ACTIVE);
 		int result = accountDao.updateAccount(account);
 
 		if (result == 0) {
@@ -107,7 +111,7 @@ public class EmployeeHelper {
 		Account account = new Account();
 
 		account.setAccNo(accNo);
-		account.setStatus("INACTIVE");
+		account.setStatus(AccountStatus.INACTIVE);
 		int result = accountDao.updateAccount(account);
 
 		if (result == 0) {
@@ -116,28 +120,25 @@ public class EmployeeHelper {
 
 	}
 
-	public int addCustomer(Customer customer) throws CustomBankException {
+	public void addCustomer(Customer customer) throws CustomBankException {
 
 		HelperUtils.nullCheck(customer);
 		
-		customer.setUserType("Customer");
-		customer.setStatus("ACTIVE");
-		Validator validator = new Validator();
+		customer.setStatus(UserStatus.ACTIVE);
 
 		try {
-			if (validator.validatePhone(customer.getPhone()) && validator.validateEmail(customer.getEmail())
-					&& validator.validatePass(customer.getPassword())) {
+			if (EmployeeUtils.validatePhone(customer.getPhone()) && EmployeeUtils.validateEmail(customer.getEmail())
+					&& EmployeeUtils.validatePass(customer.getPassword())) {
 
 				String password = customer.getPassword();
 				customer.setPassword(HashEncoder.encode(password));
 
-				return customerDao.addCustomer(List.of(customer))[0];
+				customerDao.addCustomer(List.of(customer));
 			}
 		} catch (Exception e) {
-			throw new CustomBankException("Signup failed : " + e.getMessage());
+			throw new CustomBankException("Signup failed ! " + e.getMessage());
 
 		}
-		return 0;
 
 	}
 

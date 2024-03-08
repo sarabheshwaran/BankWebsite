@@ -4,12 +4,12 @@ import java.sql.SQLException;
 import java.util.List;
 
 import uub.model.Customer;
-import uub.staticLayer.CustomBankException;
+import uub.staticlayer.CustomBankException;
 
 public interface ICustomerDao {
 
 	
-	public int[] addCustomer(List<Customer> customers) throws CustomBankException, SQLException;
+	public void addCustomer(List<Customer> customers) throws CustomBankException, SQLException;
 		
 	
 	void updateCustomer(Customer customer) throws CustomBankException;
@@ -18,5 +18,4 @@ public interface ICustomerDao {
 	public List<Customer> getCustomers(int id) throws CustomBankException;
 
 
-	List<Customer> getCustomersWithEmail(String email) throws CustomBankException;
 }

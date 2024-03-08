@@ -1,12 +1,13 @@
-package uub.logicalLayer;
+package uub.logicallayer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import uub.enums.UserStatus;
 import uub.model.User;
 import uub.persistentinterfaces.IUserDao;
-import uub.staticLayer.CustomBankException;
+import uub.staticlayer.CustomBankException;
 
 public class UserHelper {
 
@@ -33,7 +34,7 @@ public class UserHelper {
 
 	public User getUser(int id) throws CustomBankException {
 
-		List<User> users = userDao.getUserWithId(id);
+		List<User> users = userDao.getUserWithId(id,UserStatus.ACTIVE);
 
 		if (!users.isEmpty()) {
 			return users.get(0);

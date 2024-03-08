@@ -1,32 +1,23 @@
 package uub.model;
 
-import uub.staticLayer.HelperUtils;
+import uub.enums.TransactionStatus;
+import uub.enums.TransferType;
+import uub.staticlayer.HelperUtils;
 
 public class Transaction {
 
-	private int id;
+	private String id;
 	private int userId;
 	private int accNo;
 	private int transactionAcc;
-	private String type;
+	private TransferType type;
 	private double amount = -1;
 	private double openingBal = -1;
 	private double closingBal = -1;
 	private String desc;
 	private long time;
-	private String status;
+	private TransactionStatus status;
 	
-	
-	
-	public Transaction(Transaction other) {
-		this.id = other.id;
-		this.type = other.type;
-		this.desc = other.desc;
-		this.time = other.time;
-		this.status = other.status;
-	}
-
-
 
 	public Transaction() {
 		
@@ -41,10 +32,10 @@ public class Transaction {
 				+ ", closingBal=" + closingBal + ", desc=" + desc + ", time=" + time + ", status=" + status + "]";
 	}
 	
-	public int getId() {
+	public String getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 	public int getUserId() {
@@ -65,12 +56,16 @@ public class Transaction {
 	public void setTransactionAcc(int transactionAcc) {
 		this.transactionAcc = transactionAcc;
 	}
-	public String getType() {
+	public TransferType getType() {
 		return type;
 	}
-	public void setType(String type) {
+	public void setType(TransferType type) {
 		this.type = type;
 	}
+	public void setType(int type) {
+		this.type = TransferType.valueOf(type);
+	}
+	
 	public double getAmount() {
 		return amount;
 	}
@@ -101,11 +96,14 @@ public class Transaction {
 	public void setTime(long time) {
 		this.time = time;
 	}
-	public String getStatus() {
+	public TransactionStatus getStatus() {
 		return status;
 	}
-	public void setStatus(String status) {
+	public void setStatus(TransactionStatus status) {
 		this.status = status;
+	}
+	public void setStatus(int status) {
+		this.status = TransactionStatus.valueOf(status) ;
 	}
 	
 	

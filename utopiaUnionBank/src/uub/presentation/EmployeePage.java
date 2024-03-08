@@ -7,17 +7,21 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
-import uub.logicalLayer.AccountHelper;
-import uub.logicalLayer.AdminHelper;
-import uub.logicalLayer.BranchHelper;
-import uub.logicalLayer.EmployeeHelper;
+import uub.enums.AccountType;
+import uub.enums.EmployeeRole;
+import uub.enums.UserStatus;
+import uub.enums.UserType;
+import uub.logicallayer.AccountHelper;
+import uub.logicallayer.AdminHelper;
+import uub.logicallayer.BranchHelper;
+import uub.logicallayer.EmployeeHelper;
 import uub.model.Account;
 import uub.model.Branch;
 import uub.model.Customer;
 import uub.model.Employee;
 import uub.model.User;
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.DateUtils;
+import uub.staticlayer.CustomBankException;
+import uub.staticlayer.DateUtils;
 
 public class EmployeePage extends Runner {
 
@@ -28,11 +32,11 @@ public class EmployeePage extends Runner {
 		EmployeeHelper employeeHelper = new EmployeeHelper();
 
 		employee = employeeHelper.getEmployee(id);
-		String role = employee.getRole();
+		EmployeeRole role = employee.getRole();
 
 		boolean exit = false;
 
-		if (role.equals("Admin")) {
+		if (role.equals(EmployeeRole.ADMIN)) {
 
 			while (!exit) {
 
@@ -519,7 +523,8 @@ public class EmployeePage extends Runner {
 				account.setUserId(scanner.nextInt());
 				scanner.nextLine();
 				logger.info("Enter Type : ");
-				account.setType(scanner.nextLine());
+				account.setType(AccountType.valueOf(scanner.nextInt()));
+				scanner.nextLine();
 				account.setBranchId(branchId);
 
 				AccountHelper accountHelper = new AccountHelper();
@@ -645,7 +650,8 @@ public class EmployeePage extends Runner {
 				employee.setPassword(scanner.nextLine());
 
 				logger.info("Enter Role:");
-				employee.setRole(scanner.nextLine());
+				employee.setRole(scanner.nextInt());
+				scanner.nextLine();
 
 				AdminHelper adminHelper = new AdminHelper();
 
@@ -679,7 +685,7 @@ public class EmployeePage extends Runner {
 				int p = scanner.nextInt();
 				scanner.nextLine();
 				
-				Map<Integer, List<Account>> accounts = employeeHelper.getActiveAccounts(branchId,20,(p-1)*20);
+				Map<Integer, Map<Integer,Account>> accounts = employeeHelper.getActiveAccounts(branchId,20,(p-1)*20);
 
 				int size = accounts.size();
 
@@ -689,7 +695,7 @@ public class EmployeePage extends Runner {
 
 				} else {
 
-					for (Map.Entry<Integer, List<Account>> a : accounts.entrySet()) {
+					for (Map.Entry<Integer, Map<Integer,Account>> a : accounts.entrySet()) {
 
 						logger.info(a.toString());
 					}
@@ -742,7 +748,7 @@ public class EmployeePage extends Runner {
 			int p = scanner.nextInt();
 			scanner.nextLine();
 			
-			Map<Integer, List<Account>> accounts = employeeHelper.getInactiveAccounts(branchId,20,(p-1)*20);
+			Map<Integer, Map<Integer,Account>> accounts = employeeHelper.getInactiveAccounts(branchId,20,(p-1)*20);
 
 			int size = accounts.size();
 
@@ -795,13 +801,13 @@ public class EmployeePage extends Runner {
 				BranchHelper branchHelper = new BranchHelper();
 				logger.info("All Branches :");
 
-				List<Branch> branches = branchHelper.getAllBranches();
+				Map<Integer, Branch> branches = branchHelper.getAllBranches();
 				int size = branches.size();
 
-				for (Branch branch : branches) {
+				
 
-					logger.info(branch.toString());
-				}
+					logger.info(branches.toString());
+				
 
 				if (size == 0) {
 					logger.info("No Branches Available");
@@ -916,11 +922,11 @@ public class EmployeePage extends Runner {
 				AdminHelper adminHelper = new AdminHelper();
 				logger.info("Employees are :");
 
-				Map<Integer, List<Employee>> employees = adminHelper.getEmployees(branchId,20,0);
+				Map<Integer, Map<Integer,Employee>> employees = adminHelper.getEmployees(branchId,20,0);
 
 				int size = employees.size();
 
-				for (Map.Entry<Integer, List<Employee>> employee : employees.entrySet()) {
+				for (Map.Entry<Integer, Map<Integer,Employee>> employee : employees.entrySet()) {
 
 					logger.info(employee.toString());
 

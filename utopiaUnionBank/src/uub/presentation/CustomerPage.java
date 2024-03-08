@@ -2,16 +2,15 @@ package uub.presentation;
 
 import java.util.List;
 
-import uub.logicalLayer.CustomerHelper;
-import uub.logicalLayer.TransactionHelper;
-import uub.enums.SelfTransferType;
-import uub.logicalLayer.AccountHelper;
-
+import uub.enums.TransferType;
+import uub.logicallayer.AccountHelper;
+import uub.logicallayer.CustomerHelper;
+import uub.logicallayer.TransactionHelper;
 import uub.model.Account;
 import uub.model.Customer;
 import uub.model.Transaction;
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.DateUtils;
+import uub.staticlayer.CustomBankException;
+import uub.staticlayer.DateUtils;
 
 public class CustomerPage extends Runner {
 	
@@ -86,7 +85,12 @@ public class CustomerPage extends Runner {
 				}
 				catch (CustomBankException e) {
 					
-					logger.severe(e.getMessage()+" cause : "+e.getCause());
+					Throwable cause = e.getCause();
+					
+					logger.severe(e.getMessage());
+					if(cause != null) {
+						System.out.println(cause.getMessage());
+					}
 				}}
 
 				break;
@@ -116,7 +120,7 @@ public class CustomerPage extends Runner {
 		CustomerHelper customerHelper = new CustomerHelper();
 		TransactionHelper transactionHelper = new TransactionHelper();
 		
-		List<Account> accounts = customerHelper.getAccounts(customer.getId());
+		List<Account> accounts = customerHelper.getActiveAccounts(customer.getId());
 		
 		
 		Transaction transfer = new Transaction();
@@ -126,7 +130,7 @@ public class CustomerPage extends Runner {
 		scanner.nextLine();
 
 		transfer.setUserId(customer.getId());
-		transfer.setType("P2P");
+		
 
 		logger.info("Enter Amount :-");
 		transfer.setAmount(scanner.nextDouble());
@@ -151,13 +155,13 @@ public class CustomerPage extends Runner {
 		
 		if(choice == 0) {
 		
-		
-		transactionHelper.inBankTransfer(transfer, password);
+			transfer.setType(TransferType.INTRA_BANK);
+		transactionHelper.makeTransaction(transfer, password);
 		
 		}
 		else if(choice == 1) {
-			
-			transactionHelper.outBankTransfer(transfer, password);
+			transfer.setType(TransferType.INTER_BANK);
+			transactionHelper.makeTransaction(transfer, password);
 		}
 	}
 
@@ -165,7 +169,7 @@ public class CustomerPage extends Runner {
 		
 		CustomerHelper customerHelper = new CustomerHelper();
 		
-		List<Account> accounts = customerHelper.getAccounts(customer.getId());
+		List<Account> accounts = customerHelper.getActiveAccounts(customer.getId());
 
 		int size = accounts.size();
 
@@ -218,7 +222,7 @@ public class CustomerPage extends Runner {
 		scanner.nextLine();
 		transaction.setAmount(amount);
 		
-		transaction.setType("Deposit");
+		transaction.setType(TransferType.DEPOSIT);
 		
 		logger.info("Enter description : ");
 		String desc = scanner.nextLine();
@@ -230,7 +234,7 @@ public class CustomerPage extends Runner {
 		logger.info("Enter password :");
 		String password = scanner.nextLine();
 		
-		transactionHelper.selfTransfer(transaction, password,SelfTransferType.DEPOSIT);
+		transactionHelper.makeTransaction(transaction, password);
 		
 	}
 	
@@ -247,7 +251,7 @@ public class CustomerPage extends Runner {
 		scanner.nextLine();
 		transaction.setAmount(amount);
 		
-		transaction.setType("Withdraw");
+		transaction.setType(TransferType.WITHDRAW);
 		
 		logger.info("Enter description : ");
 		String desc = scanner.nextLine();
@@ -259,7 +263,7 @@ public class CustomerPage extends Runner {
 		logger.info("Enter password :");
 		String password = scanner.nextLine();
 		
-		transactionHelper.selfTransfer(transaction, password,SelfTransferType.WITHDRAW);
+		transactionHelper.makeTransaction(transaction, password);
 		
 	}
 	private void logProfile() {
@@ -286,11 +290,11 @@ public class CustomerPage extends Runner {
 			
 
 			
-		List<Transaction> transactions = transactionHelper.getTransaction(accNo, "2024-03-01","2024-03-06", 10, 0);
+		List<Transaction> transactions = transactionHelper.getTransaction(accNo, "2024-03-01","2024-03-07", 10, 1);
 		if(!transactions.isEmpty()) {
 		for(Transaction transaction : transactions) {
 			
-			logger.info(DateUtils.formatDate(transaction.getTime())+" = " + transaction.toString());
+			logger.info(transaction.getId()  +" - "+ DateUtils.formatDate(transaction.getTime())+" = " + transaction.toString());
 			
 		}}
 		else {

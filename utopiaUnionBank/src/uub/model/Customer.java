@@ -1,5 +1,7 @@
 package uub.model;
 
+import uub.enums.UserStatus;
+import uub.enums.UserType;
 
 public class Customer extends User{
 
@@ -10,13 +12,12 @@ public class Customer extends User{
 	
 	
 	public Customer() {
-		super();
-		super.setUserType("Customer");
+		super.setUserType(UserType.CUSTOMER);
 		
 	}
 	
 	public Customer(int id, String name, String email, String phone, long dOB, String gender, String password,
-			String userType, String status, String aadhar, String pAN, String address) {
+			UserType userType, UserStatus status, String aadhar, String pAN, String address) {
 		super(id, name, email, phone, dOB, gender, password, userType, status);
 		this.aadhar = aadhar;
 		this.pAN = pAN;

@@ -1,7 +1,8 @@
 package uub.model;
 
-import java.util.Collection;
-import java.util.List;
+
+import uub.enums.UserStatus;
+import uub.enums.UserType;
 
 public class User {
 
@@ -13,15 +14,14 @@ public class User {
 	private long dOB;
 	private String gender;
 	private String password;
-	private String userType;
-	private String status;
+	private UserType userType;
+	private UserStatus status;
 	
-	private List<Account> accounts;
 	
 	
 	public User() {}
 	public User(int id, String name, String email, String phone, long dOB, String gender, String password,
-			String userType, String status) {
+			UserType userType, UserStatus status) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -40,7 +40,7 @@ public class User {
 	public String toString() {
 		return "User [id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phone + ", dOB=" + dOB
 				+ ", gender=" + gender +", userType=" + userType + ", status=" + status
-				+ ", accounts=    " + accounts + "]";
+				+ ", accounts=    " ;
 	}
 	public String toString(int i) {
 		return "id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phone + ", dOB=" + dOB
@@ -89,30 +89,25 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	public String getUserType() {
+	public UserType getUserType() {
 		return userType;
 	}
-	public void setUserType(String userType) {
+	public void setUserType(UserType userType) {
 		this.userType = userType;
 	}
-	public String getStatus() {
+	public void setUserType(int type) {
+		this.userType = UserType.valueOf(type);
+	}
+	public UserStatus getStatus() {
 		return status;
 	}
-	public void setStatus(String status) {
+	public void setStatus(UserStatus status) {
 		this.status = status;
 	}
-	public List<Account> getAccounts() {
-		return accounts;
+	public void setStatus(int status) {
+		this.status = UserStatus.valueOf(status);
 	}
-	public void setAccounts(List<Account> accounts) {
-		this.accounts = accounts;
-	}
-	public void addAccount(Account account) {
-		this.accounts.add(account);
-	}
-	public void addAccount(Collection<Account> account) {
-		this.accounts.addAll(account);
-	}
+
 	
 	
 }

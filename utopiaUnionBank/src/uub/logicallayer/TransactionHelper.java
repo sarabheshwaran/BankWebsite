@@ -1,16 +1,18 @@
-package uub.logicalLayer;
+package uub.logicallayer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.util.List;
 
-import uub.enums.SelfTransferType;
+import uub.enums.TransactionStatus;
+import uub.enums.TransferType;
 import uub.model.Transaction;
 import uub.persistentinterfaces.ITransactionDao;
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.DateUtils;
-import uub.staticLayer.HelperUtils;
+import uub.staticlayer.CustomBankException;
+import uub.staticlayer.DateUtils;
+import uub.staticlayer.HelperUtils;
+import uub.staticlayer.TransactionUtils;
 
 public class TransactionHelper {
 	private ITransactionDao transactionDao;
@@ -32,118 +34,82 @@ public class TransactionHelper {
 
 	}
 
-	private int getId() throws CustomBankException {
-		int id = transactionDao.getLastId();
-		return id + 1;
-	}
 
-	public void selfTransfer(Transaction transaction, String password, SelfTransferType type)
-			throws CustomBankException {
-
-		
+	public void makeTransaction(Transaction transaction, String password) throws CustomBankException {
 
 		HelperUtils.nullCheck(transaction);
 		HelperUtils.nullCheck(password);
-		
 
 		validateTransaction(transaction);
 
 		AccountHelper accountHelper = new AccountHelper();
-		
 		try {
 
 			accountHelper.accountAuth(transaction.getAccNo(), password);
-
-			int id = getId();
+			String id = TransactionUtils.generateUniqueId(transaction.getAccNo(), transaction.getTransactionAcc());
 			transaction.setId(id);
 
-			if (type == SelfTransferType.WITHDRAW) {
+			transaction.setStatus(TransactionStatus.SUCCESS);
 
-				transaction.setAmount(0 - transaction.getAmount());
+			TransferType type = transaction.getType();
 
+			switch (type) {
+
+			case WITHDRAW:
+			case DEPOSIT: {
+				selfTransfer(transaction, type);
+				break;
+			}
+			case INTER_BANK: {
+				outBankTransfer(transaction);
+				break;
+			}
+			case INTRA_BANK: {
+				inBankTransfer(transaction);
+				break;
+			}
 			}
 
-			setTransaction(transaction);
-
-			transaction.setStatus("PASS");
-
 		} catch (CustomBankException e) {
-			transaction.setStatus("FAIL");
-			transaction.setClosingBal(transaction.getOpeningBal());
 			throw new CustomBankException("Transaction Failed ! ", e);
-		} finally {
-			transactionDao.addTransaction(transaction);
 		}
 
 	}
 
-	public void outBankTransfer(Transaction transaction, String password) throws CustomBankException {
+	private void selfTransfer(Transaction transaction, TransferType type) throws CustomBankException {
 
-	
+		if (type == TransferType.WITHDRAW) {
 
-		HelperUtils.nullCheck(password);
-		HelperUtils.nullCheck(transaction);
-
-		
-		validateTransaction(transaction);
-		
-		AccountHelper accountHelper = new AccountHelper();
-
-		try {
-			accountHelper.accountAuth(transaction.getAccNo(), password);
-
-			int id = getId();
-			transaction.setId(id);
 			transaction.setAmount(0 - transaction.getAmount());
-			transaction.setStatus("PASS");
 
-			setTransaction(transaction);
-
-		} catch (CustomBankException e) {
-			transaction.setStatus("FAIL");
-			transaction.setClosingBal(transaction.getOpeningBal());
-			throw new CustomBankException("Transaction Failed ! ", e);
-		} finally {
-			transactionDao.addTransaction(transaction);
 		}
+
+		setTransaction(transaction);
+
+		transactionDao.makeTransaction(List.of(transaction));
 
 	}
 
-	public void inBankTransfer(Transaction transaction, String password) throws CustomBankException {
+	private void outBankTransfer(Transaction transaction) throws CustomBankException {
 
+		transaction.setAmount(0 - transaction.getAmount());
 
-		HelperUtils.nullCheck(password);
-		HelperUtils.nullCheck(transaction);
+		setTransaction(transaction);
 
-		validateTransaction(transaction);
-		
+		transactionDao.makeTransaction(List.of(transaction));
 
-		AccountHelper accountHelper = new AccountHelper();
+	}
 
-		try {
-			accountHelper.accountAuth(transaction.getAccNo(), password);
-			
-			int id = getId();
-			transaction.setId(id);
-			transaction.setAmount(0 - transaction.getAmount());
-			transaction.setStatus("PASS");
+	private void inBankTransfer(Transaction transaction) throws CustomBankException {
 
-			Transaction rTransaction = generateReceiverTransaction(transaction);
+		transaction.setAmount(0 - transaction.getAmount());
 
-			setTransaction(transaction);
-			setTransaction(rTransaction);
-			
-			transactionDao.addTransaction(rTransaction);
+		Transaction rTransaction = generateReceiverTransaction(transaction);
 
-		} catch (CustomBankException e) {
-			transaction.setStatus("FAIL");
-			transaction.setClosingBal(transaction.getOpeningBal());
-			throw new CustomBankException("Transaction Failed ! ", e);
-		} finally {
+		setTransaction(transaction);
+		setTransaction(rTransaction);
 
-			transactionDao.addTransaction(transaction);
-
-		}
+		transactionDao.makeTransaction(List.of(transaction, rTransaction));
 
 	}
 
@@ -155,16 +121,12 @@ public class TransactionHelper {
 
 		int accNo = transaction.getAccNo();
 		accountHelper.validateAccount(accNo);
-		
+
 		double balance = accountHelper.getBalance(accNo);
 		double closingBalance = balance + transaction.getAmount();
-		
-		
+
 		transaction.setOpeningBal(balance);
 		transaction.setClosingBal(closingBalance);
-
-		accountHelper.updateBalance(accNo, closingBalance);
-
 
 	}
 
@@ -181,7 +143,13 @@ public class TransactionHelper {
 
 	private Transaction generateReceiverTransaction(Transaction transaction) throws CustomBankException {
 
-		Transaction rTransaction = new Transaction(transaction);
+		Transaction rTransaction = new Transaction();
+
+		rTransaction.setId(transaction.getId());
+		rTransaction.setTime(transaction.getTime());
+		rTransaction.setDesc(transaction.getDesc());
+		rTransaction.setType(transaction.getType());
+		rTransaction.setStatus(transaction.getStatus());
 
 		int accNo = transaction.getTransactionAcc();
 
@@ -204,11 +172,12 @@ public class TransactionHelper {
 
 		long ansMillis = todayMillis - 86400000 * (days);
 
-		return getTransactions(accNo, ansMillis, todayMillis, limit, (page - 1) * limit);
+		return transactionDao.getTransactions(accNo, ansMillis, todayMillis, limit, (page - 1) * limit);
 
 	}
 
-	public List<Transaction> getTransaction(int accNo, String from, String to, int limit, int page) throws CustomBankException {
+	public List<Transaction> getTransaction(int accNo, String from, String to, int limit, int page)
+			throws CustomBankException {
 
 		HelperUtils.nullCheck(from);
 		HelperUtils.nullCheck(to);
@@ -221,14 +190,7 @@ public class TransactionHelper {
 		long fromMillis = DateUtils.formatDate(fromDate);
 		long toMillis = DateUtils.formatDate(toDate);
 
-		return getTransactions(accNo, fromMillis, toMillis, limit,  (page - 1) * limit);
-	}
-
-	public List<Transaction> getTransactions(int accNo, long from, long to, int limit, int offSet)
-			throws CustomBankException {
-
-		return transactionDao.getTransactions(accNo, from, to, limit, offSet);
-
+		return transactionDao.getTransactions(accNo, fromMillis, toMillis, limit, (page - 1) * limit);
 	}
 
 }

@@ -1,4 +1,4 @@
-package uub.staticLayer;
+package uub.staticlayer;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

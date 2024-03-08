@@ -1,14 +1,15 @@
-package uub.logicalLayer;
+package uub.logicallayer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import uub.enums.AccountStatus;
 import uub.model.Account;
 import uub.model.Customer;
 import uub.persistentinterfaces.IAccountDao;
 import uub.persistentinterfaces.ICustomerDao;
-import uub.staticLayer.CustomBankException;
+import uub.staticlayer.CustomBankException;
 
 public class CustomerHelper {
 
@@ -47,9 +48,15 @@ public class CustomerHelper {
 
 	}
 
-	public List<Account> getAccounts(int customerId) throws CustomBankException {
+	public List<Account> getActiveAccounts(int customerId) throws CustomBankException {
 
-		return accountDao.getUserAccounts(customerId, "ACTIVE");
+		return accountDao.getUserAccounts(customerId, AccountStatus.ACTIVE);
+		
+	}
+	
+	public List<Account> getInactiveAccounts(int customerId) throws CustomBankException {
+
+		return accountDao.getUserAccounts(customerId, AccountStatus.INACTIVE);
 		
 	}
 

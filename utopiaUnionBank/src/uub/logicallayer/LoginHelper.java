@@ -1,9 +1,10 @@
-package uub.logicalLayer;
+package uub.logicallayer;
 
+import uub.enums.UserType;
 import uub.model.User;
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.HashEncoder;
-import uub.staticLayer.HelperUtils;
+import uub.staticlayer.CustomBankException;
+import uub.staticlayer.HashEncoder;
+import uub.staticlayer.HelperUtils;
 
 public class LoginHelper {
 
@@ -26,6 +27,8 @@ public class LoginHelper {
 
 		HelperUtils.nullCheck(password);
 		
+		
+		
 		try {
 			UserHelper userHelper = new UserHelper();
 
@@ -33,17 +36,11 @@ public class LoginHelper {
 
 			passwordValidate(user, password);
 
-			String userType = user.getUserType();
+			UserType type = user.getUserType();
+					
+			return type.getType();
 
-			if (userType.equals("Customer")) {
-
-				return 1;
-
-			} else {
-
-				return 2;
-
-			}
+			
 		} catch (CustomBankException e) {
 			throw new CustomBankException("Login Failed", e);
 		}

@@ -10,19 +10,21 @@ import java.util.List;
 
 import uub.model.Customer;
 import uub.persistentinterfaces.ICustomerDao;
-import uub.staticLayer.ConnectionManager;
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.HelperUtils;
+import uub.staticlayer.ConnectionManager;
+import uub.staticlayer.CustomBankException;
+import uub.staticlayer.HelperUtils;
 
 public class CustomerDao implements ICustomerDao {
 
-
-	
-
 	@Override
-	public int[] addCustomer(List<Customer> customers) throws CustomBankException {
+	public void addCustomer(List<Customer> customers) throws CustomBankException {
 
-		Connection connection = ConnectionManager.getConnection();
+
+		Connection connection = null;
+		try {
+
+			connection = ConnectionManager.getConnection();
+		connection.setAutoCommit(false);
 		
 		String addQuery1 = "INSERT INTO USER (NAME,EMAIL,PHONE,DOB,GENDER,PASSWORD,USER_TYPE,STATUS) VALUES (?,?,?,?,?,?,?,?)";
 		String addQuery2 = "INSERT INTO CUSTOMER VALUES (?,?,?,?)";
@@ -32,7 +34,7 @@ public class CustomerDao implements ICustomerDao {
 				PreparedStatement.RETURN_GENERATED_KEYS);
 				PreparedStatement statement2 = connection.prepareStatement(addQuery2)) {
 
-			connection.setAutoCommit(false);
+			
 			for (Customer customer : customers) {
 				statement.setObject( 1, customer.getName());
 				statement.setObject( 2, customer.getEmail());
@@ -61,54 +63,58 @@ public class CustomerDao implements ICustomerDao {
 					index++;
 				}
 
-				int[] a = statement2.executeBatch();
-				connection.commit();
-				return a;
+				statement2.executeBatch();
+				
 			}
+			
+		}
+			
+			connection.commit();
 
-		} catch (SQLException e) {
+		}  catch (SQLException e) {
+			
+			
 			try {
-				connection.rollback();
-			} catch (SQLException e1) {
-				throw new CustomBankException(e.getMessage());
+				if (connection != null) {
+					connection.rollback();
+				}
+			} catch (SQLException rbException) {
+				e.addSuppressed(rbException);
+
 			}
 			throw new CustomBankException(e.getMessage());
-		}finally {
+		
+		
+		} finally {
 			try {
-				connection.close();
-			} catch (SQLException e) {
-				throw new CustomBankException(e.getMessage());
+				if (connection != null) {
+					connection.setAutoCommit(true);
+					connection.close();
+				}
+			} catch (SQLException e1) {
+				throw new CustomBankException(e1.getMessage());
+
 			}
 		}
-	
 
 	}
 
 	@Override
 	public List<Customer> getCustomers(int id) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM CUSTOMER JOIN USER ON CUSTOMER.ID = USER.ID WHERE CUSTOMER.ID = " + id +" AND STATUS = 'ACTIVE'";
+		String getQuery = "SELECT * FROM CUSTOMER JOIN USER ON CUSTOMER.ID = USER.ID WHERE CUSTOMER.ID = " + id;
 
 		return getCustomers(getQuery);
 
 	}
 
-	@Override
-	public List<Customer> getCustomersWithEmail(String email) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM CUSTOMER JOIN USER ON CUSTOMER.ID = USER.ID WHERE EMAIL = '" + email+"' AND STATUS = 'ACTIVE'";
-
-		return getCustomers(getQuery);
-
-	}
-
-	
 	@Override
 	public void updateCustomer(Customer customer) throws CustomBankException {
 
 		HelperUtils.nullCheck(customer);
-		
-		 StringBuilder updateQuery = new StringBuilder("UPDATE CUSTOMER JOIN USER ON USER.ID = CUSTOMER.ID SET  ");
+
+		StringBuilder updateQuery = new StringBuilder("UPDATE CUSTOMER JOIN USER ON USER.ID = CUSTOMER.ID SET  ");
 
 		updateQuery.append(getFieldList(customer)).append("WHERE ID = ");
 
@@ -123,7 +129,7 @@ public class CustomerDao implements ICustomerDao {
 		}
 
 	}
-	
+
 	private List<Customer> getCustomers(String query) throws CustomBankException {
 
 		List<Customer> customers = new ArrayList<Customer>();
@@ -144,7 +150,6 @@ public class CustomerDao implements ICustomerDao {
 
 		return customers;
 	}
-
 
 	private String getFieldList(Customer customer) {
 
@@ -218,7 +223,7 @@ public class CustomerDao implements ICustomerDao {
 			statement.setObject(index++, customer.getUserType());
 		}
 		if (customer.getStatus() != null) {
-			statement.setObject(index++, customer.getStatus());
+			statement.setObject(index++, customer.getStatus().getStatus());
 		}
 		if (customer.getAadhar() != null) {
 			statement.setObject(index++, customer.getAadhar());
@@ -247,8 +252,8 @@ public class CustomerDao implements ICustomerDao {
 		customer.setdOB(resultSet.getLong("USER.DOB"));
 		customer.setGender(resultSet.getString("USER.GENDER"));
 		customer.setPassword(resultSet.getString("USER.PASSWORD"));
-		customer.setUserType(resultSet.getString("USER.USER_TYPE"));
-		customer.setStatus(resultSet.getString("USER.STATUS"));
+		customer.setUserType(resultSet.getInt("USER.USER_TYPE"));
+		customer.setStatus(resultSet.getInt("USER.STATUS"));
 		customer.setAadhar(resultSet.getString("CUSTOMER.AADHAR_NO"));
 		customer.setpAN(resultSet.getString("CUSTOMER.PAN"));
 		customer.setAddress(resultSet.getString("CUSTOMER.ADDRESS"));
@@ -256,7 +261,5 @@ public class CustomerDao implements ICustomerDao {
 		return customer;
 
 	}
-
-	
 
 }

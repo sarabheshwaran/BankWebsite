@@ -1,14 +1,15 @@
-package uub.logicalLayer;
+package uub.logicallayer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import uub.enums.AccountStatus;
 import uub.model.Account;
 import uub.model.User;
 import uub.persistentinterfaces.IAccountDao;
-import uub.staticLayer.CustomBankException;
-import uub.staticLayer.HelperUtils;
+import uub.staticlayer.CustomBankException;
+import uub.staticlayer.HelperUtils;
 
 public class AccountHelper {
 
@@ -63,7 +64,7 @@ public class AccountHelper {
 	public void validateAccount(int accNo) throws CustomBankException {
 
 		Account account = getAccount(accNo);
-		if (account.getStatus().equals("INACTIVE")) {
+		if (account.getStatus()==AccountStatus.INACTIVE) {
 			throw new CustomBankException("Account Invalid !");
 		}
 	}
@@ -121,7 +122,7 @@ public class AccountHelper {
 
 		account.setBalance(0);
 
-		account.setStatus("ACTIVE");
+		account.setStatus(AccountStatus.INACTIVE);
 
 		accountDao.addAccounts(List.of(account));
 
