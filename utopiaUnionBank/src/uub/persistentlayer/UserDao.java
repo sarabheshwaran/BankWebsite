@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import uub.enums.UserStatus;
-import uub.enums.UserType;
 import uub.model.User;
 import uub.persistentinterfaces.IUserDao;
 import uub.staticlayer.ConnectionManager;
@@ -28,19 +27,12 @@ public class UserDao implements IUserDao {
 	}
 
 
-	@Override
-	public List<User> getAllUsers(UserType type, UserStatus status, int limit , int offSet ) throws CustomBankException {
-
-		String getQuery = "SELECT * FROM USER WHERE STATUS = " + status.getStatus() + " AND USER_TYPE = '" + type.getType() + "'" +" LIMIT " + limit + " OFFSET " + offSet ;
-
-		return getUsers(getQuery);
-
-	}
 
 	@Override
-	public void updateUser(User user) throws CustomBankException {
+	public int updateUser(User user) throws CustomBankException {
 
 		HelperUtils.nullCheck(user);
+		
 
 		StringBuilder updateQuery = new StringBuilder("UPDATE USER SET  ");
 
@@ -50,11 +42,12 @@ public class UserDao implements IUserDao {
 				PreparedStatement statement = connection.prepareStatement(updateQuery.toString())) {
 
 			setValues(statement, user);
-			statement.executeUpdate();
+			return statement.executeUpdate();
 
 		} catch (SQLException e) {
 			throw new CustomBankException(e.getMessage());
 		}
+		
 
 	}
 
@@ -93,7 +86,7 @@ public class UserDao implements IUserDao {
 		if (user.getPhone() != null) {
 			queryBuilder.append("PHONE = ? , ");
 		}
-		if (user.getdOB() != 0) {
+		if (user.getDOB() != 0) {
 			queryBuilder.append("DOB = ? , ");
 		}
 		if (user.getGender() != null) {
@@ -127,8 +120,8 @@ public class UserDao implements IUserDao {
 		if (user.getPhone() != null) {
 			statement.setObject(index++, user.getPhone());
 		}
-		if (user.getdOB() != 0) {
-			statement.setLong(index++, user.getdOB());
+		if (user.getDOB() != 0) {
+			statement.setLong(index++, user.getDOB());
 		}
 		if (user.getGender() != null) {
 			statement.setObject(index++, user.getGender());
@@ -156,7 +149,7 @@ public class UserDao implements IUserDao {
 		user.setName(resultSet.getString("USER.NAME"));
 		user.setEmail(resultSet.getString("USER.EMAIL"));
 		user.setPhone(resultSet.getString("USER.PHONE"));
-		user.setdOB(resultSet.getLong("USER.DOB"));
+		user.setDOB(resultSet.getLong("USER.DOB"));
 		user.setGender(resultSet.getString("USER.GENDER"));
 		user.setPassword(resultSet.getString("USER.PASSWORD"));
 		user.setUserType(resultSet.getInt("USER.USER_TYPE"));

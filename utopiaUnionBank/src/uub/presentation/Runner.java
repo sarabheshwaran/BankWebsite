@@ -5,7 +5,8 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import uub.logicallayer.LoginHelper;
+import uub.enums.UserType;
+import uub.logicallayer.UserHelper;
 import uub.staticlayer.CustomBankException;
 import uub.staticlayer.HelperUtils;
 
@@ -27,7 +28,7 @@ public class Runner {
 		
 		try {
 		
-		LoginHelper loginHelper = new LoginHelper();
+		UserHelper loginHelper = new UserHelper();
 		
 
 		boolean exit = false;
@@ -52,14 +53,14 @@ public class Runner {
 				logger.info("Enter Password :");
 				String password = scanner.nextLine();
 				
-				int login = loginHelper.login(id, password);
+				UserType login = loginHelper.login(id, password);
 				
 				switch (login) {
-				case 0 :{
+				case CUSTOMER :{
 					logger.info("Welcome Customer");
 					new CustomerPage(id);
 					break;}
-				case 1 :
+				case EMPLOYEE:
 					logger.info("Welcome Employee");
 					new EmployeePage(id);
 					break;

@@ -43,4 +43,35 @@ public class EmployeeUtils {
 			throw new CustomBankException("Password invalid !");
 		}
 	}
+
+	public static boolean validatePAN(String panNumber) throws CustomBankException {
+		String regex = "^[A-Z]{5}[0-9]{4}[A-Z]$";
+
+		boolean ans = Pattern.matches(regex, panNumber);
+
+		if (ans) {
+			return ans;
+		} else {
+			throw new CustomBankException("PAN invalid !");
+		}
+	}
+
+	public static boolean validateAadhar(String aadhaarNumber) throws CustomBankException {
+		String regex = "^\\d{4} \\d{4} \\d{4}$";
+
+		boolean ans = Pattern.matches(regex, aadhaarNumber);
+
+		if (ans) {
+			return ans;
+		} else {
+			throw new CustomBankException("AADHAR invalid !");
+		}
+	}
+	
+
+	public static String generateIFSC(int id) {
+
+		return "UUB" + String.format("%04d", id);
+	}
+
 }

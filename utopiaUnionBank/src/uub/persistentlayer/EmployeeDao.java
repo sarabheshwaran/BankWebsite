@@ -27,7 +27,7 @@ public class EmployeeDao implements IEmployeeDao {
 	}
 
 	@Override
-	public Map<Integer, Map<Integer,Employee>> getEmployeesWithBranch(int branchId, int limit, int offSet)
+	public Map<Integer,Employee> getEmployeesWithBranch(int branchId, int limit, int offSet)
 			throws CustomBankException {
 
 		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.BRANCH_ID = "
@@ -46,7 +46,7 @@ public class EmployeeDao implements IEmployeeDao {
 			connection = ConnectionManager.getConnection();
 
 			connection.setAutoCommit(false);
-			
+
 			String addQuery1 = "INSERT INTO USER (NAME,EMAIL,PHONE,DOB,GENDER,PASSWORD,USER_TYPE,STATUS) VALUES (?,?,?,?,?,?,?,?)";
 			String addQuery2 = "INSERT INTO EMPLOYEE VALUES (?,?,?)";
 
@@ -58,7 +58,7 @@ public class EmployeeDao implements IEmployeeDao {
 					statement.setObject(1, employee.getName());
 					statement.setObject(2, employee.getEmail());
 					statement.setObject(3, employee.getPhone());
-					statement.setObject(4, employee.getdOB());
+					statement.setObject(4, employee.getDOB());
 					statement.setObject(5, employee.getGender());
 					statement.setObject(6, employee.getPassword());
 					statement.setObject(7, employee.getUserType());
@@ -90,8 +90,7 @@ public class EmployeeDao implements IEmployeeDao {
 			connection.commit();
 
 		} catch (SQLException e) {
-			
-			
+
 			try {
 				if (connection != null) {
 					connection.rollback();
@@ -101,8 +100,7 @@ public class EmployeeDao implements IEmployeeDao {
 
 			}
 			throw new CustomBankException(e.getMessage());
-		
-		
+
 		} finally {
 			try {
 				if (connection != null) {
@@ -157,9 +155,9 @@ public class EmployeeDao implements IEmployeeDao {
 		return employees;
 	}
 
-	private Map<Integer, Map<Integer,Employee>> getEmployeesOfBranch(String query) throws CustomBankException {
+	private Map<Integer,Employee> getEmployeesOfBranch(String query) throws CustomBankException {
 
-		Map<Integer, Map<Integer,Employee>> employeeMap = new HashMap<Integer, Map<Integer,Employee>>();
+	Map<Integer,Employee> employeeMap = new HashMap<Integer, Employee>();
 
 		try (Connection connection = ConnectionManager.getConnection();
 				Statement statement = connection.createStatement()) {
@@ -170,16 +168,9 @@ public class EmployeeDao implements IEmployeeDao {
 
 				Employee employee;
 
-				int id = resultSet.getInt("BRANCH_ID");
 
-				if (!employeeMap.containsKey(id)) {
-
-					employeeMap.put(id, new HashMap<Integer,Employee>());
-
-				}
-				id = resultSet.getInt("ID");
 				employee = mapEmployee(resultSet);
-				employeeMap.get(id).put(employee.getId(),employee);
+				employeeMap.put(employee.getId(),employee);
 			}
 
 		} catch (SQLException e) {
@@ -205,7 +196,7 @@ public class EmployeeDao implements IEmployeeDao {
 		if (employee.getPhone() != null) {
 			queryBuilder.append("PHONE = ? , ");
 		}
-		if (employee.getdOB() != 0) {
+		if (employee.getDOB() != 0) {
 			queryBuilder.append("DOB = ? , ");
 		}
 		if (employee.getGender() != null) {
@@ -245,8 +236,8 @@ public class EmployeeDao implements IEmployeeDao {
 		if (employee.getPhone() != null) {
 			statement.setObject(index++, employee.getPhone());
 		}
-		if (employee.getdOB() != 0) {
-			statement.setLong(index++, employee.getdOB());
+		if (employee.getDOB() != 0) {
+			statement.setLong(index++, employee.getDOB());
 		}
 		if (employee.getGender() != null) {
 			statement.setObject(index++, employee.getGender());
@@ -280,7 +271,7 @@ public class EmployeeDao implements IEmployeeDao {
 		employee.setName(resultSet.getString("USER.NAME"));
 		employee.setEmail(resultSet.getString("USER.EMAIL"));
 		employee.setPhone(resultSet.getString("USER.PHONE"));
-		employee.setdOB(resultSet.getLong("USER.DOB"));
+		employee.setDOB(resultSet.getLong("USER.DOB"));
 		employee.setGender(resultSet.getString("USER.GENDER"));
 		employee.setPassword(resultSet.getString("USER.PASSWORD"));
 		employee.setUserType(resultSet.getInt("USER.USER_TYPE"));

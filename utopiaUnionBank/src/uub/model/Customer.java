@@ -6,7 +6,7 @@ import uub.enums.UserType;
 public class Customer extends User{
 
 	private String aadhar;
-	private String pAN;
+	private String pan;
 	private String address;
 	
 	
@@ -17,15 +17,16 @@ public class Customer extends User{
 	}
 	
 	public Customer(int id, String name, String email, String phone, long dOB, String gender, String password,
-			UserType userType, UserStatus status, String aadhar, String pAN, String address) {
+			UserType userType, UserStatus status, String aadhar, String pan, String address) {
 		super(id, name, email, phone, dOB, gender, password, userType, status);
 		this.aadhar = aadhar;
-		this.pAN = pAN;
+		this.pan = pan;
 		this.address = address;
 		
 	}
+	
 	public String toString() {
-		return "Customer ["+ toString(0) +", aadhar=" + aadhar + ", pAN=" + pAN + ", address=" + address + "]";
+		return "Customer ["+ toString(0) +", aadhar=" + aadhar + ", pAN=" + pan + ", address=" + address + "]";
 	}
 	public String getAadhar() {
 		return aadhar;
@@ -33,11 +34,11 @@ public class Customer extends User{
 	public void setAadhar(String aadhar) {
 		this.aadhar = aadhar;
 	}
-	public String getpAN() {
-		return pAN;
+	public String getPAN() {
+		return pan;
 	}
-	public void setpAN(String pAN) {
-		this.pAN = pAN;
+	public void setPAN(String pAN) {
+		this.pan = pAN;
 	}
 	public String getAddress() {
 		return address;

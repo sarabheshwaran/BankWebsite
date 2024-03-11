@@ -11,7 +11,7 @@ public class User {
 	private String name;
 	private String email;
 	private String phone;
-	private long dOB;
+	private long dob;
 	private String gender;
 	private String password;
 	private UserType userType;
@@ -20,6 +20,8 @@ public class User {
 	
 	
 	public User() {}
+	
+	
 	public User(int id, String name, String email, String phone, long dOB, String gender, String password,
 			UserType userType, UserStatus status) {
 		super();
@@ -27,7 +29,7 @@ public class User {
 		this.name = name;
 		this.email = email;
 		this.phone = phone;
-		this.dOB = dOB;
+		this.dob = dOB;
 		this.gender = gender;
 		this.password = password;
 		this.userType = userType;
@@ -38,12 +40,12 @@ public class User {
 
 	@Override
 	public String toString() {
-		return "User [id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phone + ", dOB=" + dOB
+		return "User [id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phone + ", dOB=" + dob
 				+ ", gender=" + gender +", userType=" + userType + ", status=" + status
 				+ ", accounts=    " ;
 	}
 	public String toString(int i) {
-		return "id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phone + ", dOB=" + dOB
+		return "id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phone + ", dob=" + dob
 				+ ", gender=" + gender +  ", userType=" + userType + ", status=" + status;
 	}
 	
@@ -71,11 +73,11 @@ public class User {
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
-	public long getdOB() {
-		return  dOB;
+	public long getDOB() {
+		return  dob;
 	}
-	public void setdOB(long dOB) {
-		this.dOB = dOB;
+	public void setDOB(long dob) {
+		this.dob = dob;
 	}
 	public String getGender() {
 		return gender;

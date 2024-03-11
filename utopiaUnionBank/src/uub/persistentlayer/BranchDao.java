@@ -18,11 +18,6 @@ import uub.staticlayer.HelperUtils;
 
 public class BranchDao implements IBranchDao {
 
-	private Connection connection;
-
-	public BranchDao() throws CustomBankException {
-		connection = ConnectionManager.getConnection();
-	}
 
 	@Override
 	public Map<Integer,Branch> getBranches() throws CustomBankException {

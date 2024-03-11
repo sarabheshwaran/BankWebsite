@@ -1,9 +1,9 @@
 package uub.presentation;
 
 import java.util.List;
+import java.util.Map;
 
 import uub.enums.TransferType;
-import uub.logicallayer.AccountHelper;
 import uub.logicallayer.CustomerHelper;
 import uub.logicallayer.TransactionHelper;
 import uub.model.Account;
@@ -21,7 +21,6 @@ public class CustomerPage extends Runner {
 
 
 		CustomerHelper customerHelper = new CustomerHelper();
-		TransactionHelper transactionHelper = new TransactionHelper();
 		
 		customer = customerHelper.getCustomer(id);
 
@@ -72,13 +71,6 @@ public class CustomerPage extends Runner {
 					try {
 						
 						getTransaction();
-//				Transaction transaction = getTransaction();
-//				
-//				logger.info("Enter Password");
-//				
-//				String password = scanner.nextLine();
-//				
-//				transactionHelper.inBankTransfer(transaction, password);
 				flag = false;
 				logger.warning("Press Enter to Exit");
 				scanner.nextLine();
@@ -118,9 +110,8 @@ public class CustomerPage extends Runner {
 
 	private void getTransaction() throws CustomBankException {
 		CustomerHelper customerHelper = new CustomerHelper();
-		TransactionHelper transactionHelper = new TransactionHelper();
 		
-		List<Account> accounts = customerHelper.getActiveAccounts(customer.getId());
+		Map<Integer, Account> accounts = customerHelper.getActiveAccounts(customer.getId());
 		
 		
 		Transaction transfer = new Transaction();
@@ -137,9 +128,7 @@ public class CustomerPage extends Runner {
 		scanner.nextLine();
 
 		logger.info("Select Account :");
-		for (Account account : accounts) {
-			logger.info(account.toString());
-		}
+			logger.info(accounts.toString());
 		
 		transfer.setAccNo(scanner.nextInt());
 
@@ -156,12 +145,12 @@ public class CustomerPage extends Runner {
 		if(choice == 0) {
 		
 			transfer.setType(TransferType.INTRA_BANK);
-		transactionHelper.makeTransaction(transfer, password);
+			customerHelper.makeTransaction(transfer, password);
 		
 		}
 		else if(choice == 1) {
 			transfer.setType(TransferType.INTER_BANK);
-			transactionHelper.makeTransaction(transfer, password);
+			customerHelper.makeTransaction(transfer, password);
 		}
 	}
 
@@ -169,7 +158,7 @@ public class CustomerPage extends Runner {
 		
 		CustomerHelper customerHelper = new CustomerHelper();
 		
-		List<Account> accounts = customerHelper.getActiveAccounts(customer.getId());
+		Map<Integer, Account> accounts = customerHelper.getActiveAccounts(customer.getId());
 
 		int size = accounts.size();
 
@@ -179,11 +168,10 @@ public class CustomerPage extends Runner {
 
 		} else {
 
-			for (Account account : accounts) {
 
-				logger.info(account.toString());
+				logger.info(accounts.toString());
 
-			}
+			
 			
 			logger.info("Enter account id to view :");
 			displayAccount(scanner.nextInt());
@@ -192,8 +180,8 @@ public class CustomerPage extends Runner {
 
 	private void displayAccount(int accNo) throws CustomBankException {
 		
-		AccountHelper accountHelper = new AccountHelper();
-		logger.info(accountHelper.getAccount(accNo).toString());
+		TransactionHelper transactionHelper = new TransactionHelper();
+		logger.info(transactionHelper.getAccount(accNo).toString());
 		
 		logger.info("0.withdraw \n1.deposit \n2.history");
 		int option = scanner.nextInt();
@@ -210,8 +198,9 @@ public class CustomerPage extends Runner {
 	}
 	
 	private void deposit(int accNo) throws CustomBankException {
+
+		CustomerHelper customerHelper = new CustomerHelper();
 		
-		TransactionHelper transactionHelper = new TransactionHelper();
 		
 		Transaction transaction = new Transaction();
 		
@@ -234,13 +223,14 @@ public class CustomerPage extends Runner {
 		logger.info("Enter password :");
 		String password = scanner.nextLine();
 		
-		transactionHelper.makeTransaction(transaction, password);
+		customerHelper.makeTransaction(transaction, password);
 		
 	}
 	
 	private void withdraw(int accNo) throws CustomBankException{
+
+		CustomerHelper customerHelper = new CustomerHelper();
 		
-		TransactionHelper transactionHelper = new TransactionHelper();
 		
 		Transaction transaction = new Transaction();
 		
@@ -263,7 +253,7 @@ public class CustomerPage extends Runner {
 		logger.info("Enter password :");
 		String password = scanner.nextLine();
 		
-		transactionHelper.makeTransaction(transaction, password);
+		customerHelper.makeTransaction(transaction, password);
 		
 	}
 	private void logProfile() {
@@ -273,7 +263,7 @@ public class CustomerPage extends Runner {
 		logger.info("Name: " + customer.getName());
 		logger.info("Email: " + customer.getEmail());
 		logger.info("Phone: " + customer.getPhone());
-		logger.info("DOB: " + DateUtils.formatDate(customer.getdOB()));
+		logger.info("DOB: " + DateUtils.formatDate(customer.getDOB()));
 		logger.info("Gender: " + customer.getGender());
 		logger.info("User Type: " + customer.getUserType());
 		logger.info("Status: " + customer.getStatus());
@@ -282,19 +272,14 @@ public class CustomerPage extends Runner {
 
 	private void displayHistory(int accNo) throws CustomBankException {
 		
-		TransactionHelper transactionHelper = new TransactionHelper();
+		CustomerHelper customerHelper = new CustomerHelper();
 		
-	
-		
-
 			
-
-			
-		List<Transaction> transactions = transactionHelper.getTransaction(accNo, "2024-03-01","2024-03-07", 10, 1);
+		List<Transaction> transactions = customerHelper.getTransaction(accNo, "2024-03-01","2024-03-08", 10, 1);
 		if(!transactions.isEmpty()) {
 		for(Transaction transaction : transactions) {
 			
-			logger.info(transaction.getId()  +" - "+ DateUtils.formatDate(transaction.getTime())+" = " + transaction.toString());
+			logger.info(transaction.getId()  +" - "+ DateUtils.formatTime(transaction.getTime())+" = " + transaction.toString());
 			
 		}}
 		else {

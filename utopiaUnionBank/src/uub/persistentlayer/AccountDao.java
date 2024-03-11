@@ -20,34 +20,25 @@ import uub.staticlayer.HelperUtils;
 
 public class AccountDao implements IAccountDao {
 
-	private Connection connection;
-
-	public AccountDao() throws CustomBankException {
-		connection = ConnectionManager.getConnection();
-	}
-
-
 	@Override
-	public List<Account> getUserAccounts(int userId, AccountStatus status) throws CustomBankException {
+	public Map<Integer, Account> getUserAccounts(int userId, AccountStatus status) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM ACCOUNTS JOIN USER ON USER.ID = ACCOUNTS.USER_ID WHERE USER_ID = " + userId
-				+ " AND ACCOUNTS.STATUS = " + status.getStatus() ;
-
-		return getAccounts(getQuery);
-
-	}
-
-	@Override
-	public Map<Integer, Map<Integer,Account>> getBranchAccounts(int branchId, AccountStatus status, int limit, int offSet) throws CustomBankException {
-
-		String getQuery = "SELECT * FROM ACCOUNTS JOIN USER ON USER.ID = ACCOUNTS.USER_ID WHERE  ACCOUNTS.STATUS = "
-				+ status.getStatus() + " AND BRANCH_ID = " + branchId + " LIMIT "+limit+" OFFSET "+offSet;
+		String getQuery = "SELECT * FROM ACCOUNTS WHERE USER_ID = " + userId + " AND ACCOUNTS.STATUS = "
+				+ status.getStatus();
 
 		return getAccountsWithUser(getQuery);
 
 	}
 
+	@Override
+	public Map<Integer, Map<Integer, Account>> getBranchAccounts(int branchId, AccountStatus status, int limit,
+			int offSet) throws CustomBankException {
 
+		String getQuery = "SELECT * FROM ACCOUNTS WHERE  ACCOUNTS.STATUS = " + status.getStatus() + " AND BRANCH_ID = "
+				+ branchId + " LIMIT " + limit + " OFFSET " + offSet;
+
+		return getAccountsWithBranch(getQuery);
+	}
 
 	@Override
 	public List<Account> getAccount(int accNo) throws CustomBankException {
@@ -58,23 +49,21 @@ public class AccountDao implements IAccountDao {
 
 	}
 
-
-
 	@Override
 	public void addAccounts(List<Account> accounts) throws CustomBankException {
 
 		HelperUtils.nullCheck(accounts);
-		
-		 String addQuery = "INSERT INTO ACCOUNTS (USER_ID,BRANCH_ID,TYPE,BALANCE,STATUS) VALUES (?,?,?,?,?)";
 
+		String addQuery = "INSERT INTO ACCOUNTS (USER_ID,BRANCH_ID,TYPE,BALANCE,STATUS) VALUES (?,?,?,?,?)";
 
-		try (PreparedStatement statement = connection.prepareStatement(addQuery)) {
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(addQuery)) {
 			for (Account account : accounts) {
-				statement.setObject( 1, account.getUserId());
-				statement.setObject( 2, account.getBranchId());
-				statement.setObject( 3, account.getType().getType());
-				statement.setObject( 4, account.getBalance());
-				statement.setObject( 5, account.getStatus());
+				statement.setObject(1, account.getUserId());
+				statement.setObject(2, account.getBranchId());
+				statement.setObject(3, account.getType().getType());
+				statement.setObject(4, account.getBalance());
+				statement.setObject(5, account.getStatus().getStatus());
 
 				statement.addBatch();
 			}
@@ -95,7 +84,8 @@ public class AccountDao implements IAccountDao {
 
 		updateQuery.append(buildSet(account)).append("WHERE ACC_NO = ?");
 
-		try (PreparedStatement statement = connection.prepareStatement(updateQuery.toString())) {
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(updateQuery.toString())) {
 
 			setValues(statement, account);
 
@@ -113,7 +103,8 @@ public class AccountDao implements IAccountDao {
 
 		List<Account> accounts = new ArrayList<Account>();
 
-		try (Statement statement = connection.createStatement()) {
+		try (Connection connection = ConnectionManager.getConnection();
+				Statement statement = connection.createStatement()) {
 
 			ResultSet resultSet = statement.executeQuery(query);
 
@@ -132,13 +123,40 @@ public class AccountDao implements IAccountDao {
 
 	}
 
-	private Map<Integer, Map<Integer,Account>> getAccountsWithUser(String query) throws CustomBankException {
-		
+	private Map<Integer, Account> getAccountsWithUser(String query) throws CustomBankException {
+
 		HelperUtils.nullCheck(query);
 
-		Map<Integer, Map<Integer,Account>> accountMap = new HashMap<Integer, Map<Integer,Account>>();
+		Map<Integer, Account> accountMap = new HashMap<Integer, Account>();
 
-		try (Statement statement = connection.createStatement()) {
+		try (Connection connection = ConnectionManager.getConnection();
+				Statement statement = connection.createStatement()) {
+
+			ResultSet resultSet = statement.executeQuery(query);
+			while (resultSet.next()) {
+
+				Account account;
+
+				account = mapAccount(resultSet);
+				accountMap.put(account.getAccNo(), account);
+
+			}
+
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+		return accountMap;
+	}
+
+	private Map<Integer, Map<Integer, Account>> getAccountsWithBranch(String query) throws CustomBankException {
+
+		HelperUtils.nullCheck(query);
+
+		Map<Integer, Map<Integer, Account>> accountMap = new HashMap<Integer, Map<Integer, Account>>();
+
+		try (Connection connection = ConnectionManager.getConnection();
+				Statement statement = connection.createStatement()) {
 
 			ResultSet resultSet = statement.executeQuery(query);
 			while (resultSet.next()) {
@@ -149,12 +167,11 @@ public class AccountDao implements IAccountDao {
 
 				if (!accountMap.containsKey(id)) {
 
-					accountMap.put(id, new HashMap<Integer,Account>());
+					accountMap.put(id, new HashMap<Integer, Account>());
 
 				}
-				id = resultSet.getInt("USER_ID");
 				account = mapAccount(resultSet);
-				accountMap.get(id).put(account.getAccNo(),account);
+				accountMap.get(id).put(account.getAccNo(), account);
 
 			}
 
@@ -179,7 +196,6 @@ public class AccountDao implements IAccountDao {
 	}
 
 	private String buildSet(Account account) {
-		
 
 		StringBuilder queryBuilder = new StringBuilder("  ");
 

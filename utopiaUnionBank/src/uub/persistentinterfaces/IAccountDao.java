@@ -13,19 +13,12 @@ public interface IAccountDao {
 
 	int updateAccount(Account account) throws CustomBankException;
 
-
-
 	List<Account> getAccount(int accNo) throws CustomBankException;
 
+	Map<Integer, Map<Integer,Account>> getBranchAccounts(int branchId, AccountStatus status, int limit, int offSet) throws CustomBankException;
 
-
-	Map<Integer, Map<Integer,Account>> getBranchAccounts(int branchId, AccountStatus status, int limit, int offSet)
-			throws CustomBankException;
-
-	List<Account> getUserAccounts(int userId, AccountStatus status) throws CustomBankException;
+	Map<Integer, Account> getUserAccounts(int userId, AccountStatus status) throws CustomBankException;
 	
-
-
 
 	
 }

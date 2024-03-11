@@ -4,22 +4,16 @@ import java.util.Date;
 import java.util.InputMismatchException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.Map;
 
 import uub.enums.AccountType;
 import uub.enums.EmployeeRole;
-import uub.enums.UserStatus;
-import uub.enums.UserType;
-import uub.logicallayer.AccountHelper;
 import uub.logicallayer.AdminHelper;
-import uub.logicallayer.BranchHelper;
 import uub.logicallayer.EmployeeHelper;
 import uub.model.Account;
 import uub.model.Branch;
 import uub.model.Customer;
 import uub.model.Employee;
-import uub.model.User;
 import uub.staticlayer.CustomBankException;
 import uub.staticlayer.DateUtils;
 
@@ -47,10 +41,10 @@ public class EmployeePage extends Runner {
 					logger.info("Please Select an option : -");
 					logger.info(i++ + ". See Profile.");
 					logger.info(i++ + ". See All Branches.");
-					logger.info(i+++". Activate account");
-					logger.info(i+++". Dectivate account");
-					logger.info(i+++". Activate user");
-					logger.info(i+++". Dectivate user");
+					logger.info(i++ + ". Activate account");
+					logger.info(i++ + ". Dectivate account");
+					logger.info(i++ + ". Activate user");
+					logger.info(i++ + ". Dectivate user");
 					logger.info(i++ + ". See All Employees.");
 					logger.info(i++ + ". Add Customer.");
 					logger.info(i++ + ". Add Employee.");
@@ -282,232 +276,6 @@ public class EmployeePage extends Runner {
 		}
 	}
 
-	private void logInactiveCustomers() throws CustomBankException {
-
-		boolean exit = false;
-		while (!exit) {
-			try {
-				EmployeeHelper employeeHelper = new EmployeeHelper();
-
-				List<User> users = employeeHelper.getInactiveCustomers(10,0);
-
-				int size = users.size();
-
-				logger.info("Inactive Customers : ");
-				for (int i = 0; i < size; i++) {
-					logger.info(i + " - " + users.get(i));
-
-				}
-
-				if (size == 0) {
-					logger.info("No inactive Customers !");
-				}
-				int i = 0;
-				logger.info(i++ + ". Activate Customer");
-				logger.info("-1. exit");
-				int choice = scanner.nextInt();
-				scanner.nextLine();
-				switch (choice) {
-				case 0: {
-					inActivateUser();
-					logger.warning("Press Enter to Exit");
-					scanner.nextLine();
-					break;
-				}
-				case -1: {
-					exit = true;
-					break;
-				}
-
-				default: {
-					logger.warning("Enter correct option");
-					logger.warning("Press Enter to Exit");
-					scanner.nextLine();
-					break;
-				}
-				}
-			} catch (CustomBankException e) {
-				logger.severe(e.getMessage());
-			} catch (InputMismatchException e) {
-				logger.severe("Enter valid input!");
-				scanner.next();
-			}
-		}
-
-	}
-
-	private void logInactiveEmployees() throws CustomBankException {
-
-		boolean exit = false;
-		while (!exit) {
-			try {
-				AdminHelper adminHelper = new AdminHelper();
-
-				List<User> users = adminHelper.getInactiveEmployees(10,0);
-
-				int size = users.size();
-
-				logger.info("Inactive Employees : ");
-				for (int i = 0; i < size; i++) {
-					logger.info(i + " - " + users.get(i));
-
-				}
-
-				if (size == 0) {
-					logger.info("No inactive Employees !");
-				}
-				int i = 0;
-				logger.info(i++ + ". Activate Employee");
-				logger.info("-1. exit");
-				int choice = scanner.nextInt();
-				scanner.nextLine();
-				switch (choice) {
-				case 0: {
-					activateUser();
-					logger.warning("Press Enter to Exit");
-					scanner.nextLine();
-					break;
-				}
-				case -1: {
-					exit = true;
-					break;
-				}
-
-				default: {
-					logger.warning("Enter correct option");
-					logger.warning("Press Enter to Exit");
-					scanner.nextLine();
-					break;
-				}
-				}
-			} catch (CustomBankException e) {
-				logger.severe(e.getMessage());
-			} catch (InputMismatchException e) {
-				logger.severe("Enter valid input!");
-				scanner.next();
-			}
-		}
-
-	}
-
-	private void logActiveEmployees() throws CustomBankException {
-
-		boolean exit = false;
-		while (!exit) {
-			try {
-				AdminHelper adminHelper = new AdminHelper();
-
-				List<User> users = adminHelper.getActiveEmployees(10,0);
-
-				int size = users.size();
-
-				logger.info("Active Employees : ");
-				for (int i = 0; i < size; i++) {
-					logger.info(i + " - " + users.get(i));
-
-				}
-
-				if (size == 0) {
-					logger.info("No active Employees !");
-				}
-				int i = 0;
-
-				logger.info(i++ + ". Add Employee");
-				logger.info(i++ + ". Deactivate Employee");
-				logger.info("-1. exit");
-				int choice = scanner.nextInt();
-				scanner.nextLine();
-				switch (choice) {
-				case 0: {
-					createEmployee();
-					logger.warning("Press Enter to Exit");
-					scanner.nextLine();
-					;
-				}
-				case 1: {
-					inActivateUser();
-					logger.warning("Press Enter to Exit");
-					scanner.nextLine();
-					break;
-				}
-				case -1: {
-					exit = true;
-					break;
-				}
-
-				default: {
-					logger.warning("Enter correct option");
-					break;
-				}
-				}
-			} catch (CustomBankException e) {
-				logger.severe(e.getMessage());
-			} catch (InputMismatchException e) {
-				logger.severe("Enter valid input!");
-				scanner.next();
-			}
-		}
-
-	}
-
-	private void logActiveCustomers() throws CustomBankException {
-
-		boolean exit = false;
-		while (!exit) {
-			try {
-				EmployeeHelper employeeHelper = new EmployeeHelper();
-
-				List<User> users = employeeHelper.getActiveCustomers(10,0);
-
-				int size = users.size();
-
-				logger.info("Active Customers : ");
-				for (int i = 0; i < size; i++) {
-					logger.info(i + " - " + users.get(i));
-
-				}
-
-				if (size == 0) {
-					logger.info("No active Customers !");
-				}
-				int i = 0;
-				logger.info(i++ + ". Add Customers");
-				logger.info(i++ + ". Deactivate Customer");
-				logger.info("-1. exit");
-				int choice = scanner.nextInt();
-				scanner.nextLine();
-				switch (choice) {
-				case 0: {
-					createCustomer();
-					logger.warning("Press Enter to Exit");
-					scanner.nextLine();
-					;
-				}
-				case 1: {
-					inActivateUser();
-					logger.warning("Press Enter to Exit");
-					scanner.nextLine();
-					break;
-				}
-				case -1: {
-					exit = true;
-					break;
-				}
-
-				default: {
-					logger.warning("Enter correct option");
-					break;
-				}
-				}
-			} catch (CustomBankException e) {
-				logger.severe(e.getMessage());
-			} catch (InputMismatchException e) {
-				logger.severe("Enter valid input!");
-				scanner.next();
-			}
-		}
-
-	}
 
 	private void createAccount(int branchId) {
 		boolean exit = false;
@@ -527,15 +295,15 @@ public class EmployeePage extends Runner {
 				scanner.nextLine();
 				account.setBranchId(branchId);
 
-				AccountHelper accountHelper = new AccountHelper();
-
-				accountHelper.addAccount(account);
+				EmployeeHelper employeeHelper = new EmployeeHelper();
+				employeeHelper.addAccount(account);
 
 				logger.warning("Account Created !");
 				exit = true;
 
 			} catch (CustomBankException e) {
 				logger.severe("Account Creation Failed : " + e.getMessage());
+				e.printStackTrace();
 			} catch (InputMismatchException e) {
 				logger.severe("Enter valid input!");
 				scanner.next();
@@ -572,7 +340,7 @@ public class EmployeePage extends Runner {
 				long millis = DateUtils.formatDate(DateUtils.formatDateString(dateString));
 				
 
-				customer.setdOB(millis);
+				customer.setDOB(millis);
 
 				logger.info("Enter Gender: ");
 				customer.setGender(scanner.nextLine());
@@ -587,7 +355,7 @@ public class EmployeePage extends Runner {
 				customer.setAadhar(scanner.nextLine());
 
 				logger.info("Enter PAN : ");
-				customer.setpAN(scanner.nextLine());
+				customer.setPAN(scanner.nextLine());
 
 				EmployeeHelper employeeHelper = new EmployeeHelper();
 
@@ -641,7 +409,7 @@ public class EmployeePage extends Runner {
 				date = dateFormat.parse(scanner.nextLine());
 				millis = date.getTime();
 
-				employee.setdOB(millis);
+				employee.setDOB(millis);
 
 				logger.info("Enter Gender: ");
 				employee.setGender(scanner.nextLine());
@@ -798,10 +566,10 @@ public class EmployeePage extends Runner {
 
 			try {
 
-				BranchHelper branchHelper = new BranchHelper();
+				AdminHelper adminHelper = new AdminHelper();
 				logger.info("All Branches :");
 
-				Map<Integer, Branch> branches = branchHelper.getAllBranches();
+				Map<Integer, Branch> branches = adminHelper.getAllBranches();
 				int size = branches.size();
 
 				
@@ -886,7 +654,7 @@ public class EmployeePage extends Runner {
 		while (!exit) {
 			try {
 
-				BranchHelper branchHelper = new BranchHelper();
+				AdminHelper adminHelper = new AdminHelper();
 
 				logger.finer("Branch Creation :");
 
@@ -898,7 +666,7 @@ public class EmployeePage extends Runner {
 				logger.info("Enter branch address :");
 				branch.setAddress(scanner.nextLine());
 
-				branchHelper.addBranch(branch);
+				adminHelper.addBranch(branch);
 				exit = true;
 			} catch (CustomBankException e) {
 				logger.warning(e.getMessage());
@@ -922,11 +690,11 @@ public class EmployeePage extends Runner {
 				AdminHelper adminHelper = new AdminHelper();
 				logger.info("Employees are :");
 
-				Map<Integer, Map<Integer,Employee>> employees = adminHelper.getEmployees(branchId,20,0);
+				 Map<Integer,Employee> employees = adminHelper.getEmployees(branchId,20,0);
 
 				int size = employees.size();
 
-				for (Map.Entry<Integer, Map<Integer,Employee>> employee : employees.entrySet()) {
+				for (Map.Entry<Integer, Employee> employee : employees.entrySet()) {
 
 					logger.info(employee.toString());
 
@@ -981,7 +749,7 @@ public class EmployeePage extends Runner {
 		logger.info("Name: " + employee.getName());
 		logger.info("Email: " + employee.getEmail());
 		logger.info("Phone: " + employee.getPhone());
-		logger.info("DOB: " + DateUtils.formatDate( employee.getdOB()));
+		logger.info("DOB: " + DateUtils.formatDate( employee.getDOB()));
 		logger.info("Gender: " + employee.getGender());
 		logger.info("User Type: " + employee.getUserType());
 		logger.info("Status: " + employee.getStatus());

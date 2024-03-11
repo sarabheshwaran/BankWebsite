@@ -3,24 +3,24 @@ package uub.model;
 public class Branch {
 
 	private int id;
-	private String iFSC;
+	private String ifsc;
 	private String name;
 	private String address;
 
 	public Branch() {
 	}
 
-	public Branch(int id, String iFSC, String name, String address) {
+	public Branch(int id, String ifsc, String name, String address) {
 		super();
 		this.id = id;
-		this.iFSC = iFSC;
+		this.ifsc = ifsc;
 		this.name = name;
 		this.address = address;
 	}
 
 	@Override
 	public String toString() {
-		return "Branch [id=" + id + ", iFSC=" + iFSC + ", name=" + name + ", address=" + address + "]\n";
+		return "Branch [id=" + id + ", iFSC=" + ifsc + ", name=" + name + ", address=" + address + "]\n";
 	}
 
 	public int getId() {
@@ -32,11 +32,11 @@ public class Branch {
 	}
 
 	public String getiFSC() {
-		return iFSC;
+		return ifsc;
 	}
 
-	public void setiFSC(String iFSC) {
-		this.iFSC = iFSC;
+	public void setiFSC(String ifsc) {
+		this.ifsc = ifsc;
 	}
 
 	public String getName() {

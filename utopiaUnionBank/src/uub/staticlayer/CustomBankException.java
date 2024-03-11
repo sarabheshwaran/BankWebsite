@@ -12,6 +12,10 @@ public class CustomBankException extends Exception{
 	public <T> CustomBankException(T message ,Exception cause){
 		super(message.toString(),cause);
 	}
+	
+	public <T> CustomBankException(T message){
+		super(message.toString());
+	}
 
 	public CustomBankException() {
 		super();

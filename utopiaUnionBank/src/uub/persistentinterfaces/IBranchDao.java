@@ -8,17 +8,12 @@ import uub.staticlayer.CustomBankException;
 
 public interface IBranchDao {
 
-	
-	
+	public Map<Integer, Branch> getBranches() throws CustomBankException;
 
-	public Map<Integer,Branch> getBranches() throws CustomBankException;
-	
 	public void addBranch(List<Branch> branches) throws CustomBankException;
-
 
 	void updateBranches(Branch branch) throws CustomBankException;
 
 	List<Branch> getBranch(int id) throws CustomBankException;
-	
-		
+
 }

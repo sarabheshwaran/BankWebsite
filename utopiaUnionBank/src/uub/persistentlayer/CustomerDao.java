@@ -39,7 +39,7 @@ public class CustomerDao implements ICustomerDao {
 				statement.setObject( 1, customer.getName());
 				statement.setObject( 2, customer.getEmail());
 				statement.setObject( 3, customer.getPhone());
-				statement.setObject( 4, customer.getdOB());
+				statement.setObject( 4, customer.getDOB());
 				statement.setObject( 5, customer.getGender());
 				statement.setObject( 6, customer.getPassword());
 				statement.setObject( 7, customer.getUserType());
@@ -56,7 +56,7 @@ public class CustomerDao implements ICustomerDao {
 					Customer customer = customers.get(index);
 					statement2.setObject( 1, id);
 					statement2.setObject( 2, customer.getAadhar());
-					statement2.setObject( 3, customer.getpAN());
+					statement2.setObject( 3, customer.getPAN());
 					statement2.setObject( 4, customer.getAddress());
 
 					statement2.addBatch();
@@ -167,7 +167,7 @@ public class CustomerDao implements ICustomerDao {
 		if (customer.getPhone() != null) {
 			queryBuilder.append("PHONE = ? , ");
 		}
-		if (customer.getdOB() != 0) {
+		if (customer.getDOB() != 0) {
 			queryBuilder.append("DOB = ? , ");
 		}
 		if (customer.getGender() != null) {
@@ -185,7 +185,7 @@ public class CustomerDao implements ICustomerDao {
 		if (customer.getAadhar() != null) {
 			queryBuilder.append("AADHAR_NO = ? , ");
 		}
-		if (customer.getpAN() != null) {
+		if (customer.getPAN() != null) {
 			queryBuilder.append("PAN = ? , ");
 		}
 		if (customer.getAddress() != null) {
@@ -210,8 +210,8 @@ public class CustomerDao implements ICustomerDao {
 		if (customer.getPhone() != null) {
 			statement.setObject(index++, customer.getPhone());
 		}
-		if (customer.getdOB() != 0) {
-			statement.setLong(index++, customer.getdOB());
+		if (customer.getDOB() != 0) {
+			statement.setLong(index++, customer.getDOB());
 		}
 		if (customer.getGender() != null) {
 			statement.setObject(index++, customer.getGender());
@@ -228,8 +228,8 @@ public class CustomerDao implements ICustomerDao {
 		if (customer.getAadhar() != null) {
 			statement.setObject(index++, customer.getAadhar());
 		}
-		if (customer.getpAN() != null) {
-			statement.setObject(index++, customer.getpAN());
+		if (customer.getPAN() != null) {
+			statement.setObject(index++, customer.getPAN());
 		}
 		if (customer.getAddress() != null) {
 			statement.setObject(index++, customer.getAddress());
@@ -249,13 +249,13 @@ public class CustomerDao implements ICustomerDao {
 		customer.setName(resultSet.getString("USER.NAME"));
 		customer.setEmail(resultSet.getString("USER.EMAIL"));
 		customer.setPhone(resultSet.getString("USER.PHONE"));
-		customer.setdOB(resultSet.getLong("USER.DOB"));
+		customer.setDOB(resultSet.getLong("USER.DOB"));
 		customer.setGender(resultSet.getString("USER.GENDER"));
 		customer.setPassword(resultSet.getString("USER.PASSWORD"));
 		customer.setUserType(resultSet.getInt("USER.USER_TYPE"));
 		customer.setStatus(resultSet.getInt("USER.STATUS"));
 		customer.setAadhar(resultSet.getString("CUSTOMER.AADHAR_NO"));
-		customer.setpAN(resultSet.getString("CUSTOMER.PAN"));
+		customer.setPAN(resultSet.getString("CUSTOMER.PAN"));
 		customer.setAddress(resultSet.getString("CUSTOMER.ADDRESS"));
 
 		return customer;

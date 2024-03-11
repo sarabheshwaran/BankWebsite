@@ -6,27 +6,27 @@ import java.util.List;
 import java.util.Map;
 
 import uub.enums.AccountStatus;
+import uub.enums.Exceptions;
 import uub.enums.UserStatus;
-import uub.enums.UserType;
 import uub.model.Account;
+import uub.model.Branch;
 import uub.model.Customer;
 import uub.model.Employee;
-import uub.model.User;
 import uub.persistentinterfaces.IAccountDao;
+import uub.persistentinterfaces.IBranchDao;
 import uub.persistentinterfaces.ICustomerDao;
 import uub.persistentinterfaces.IEmployeeDao;
-import uub.persistentinterfaces.IUserDao;
 import uub.staticlayer.CustomBankException;
 import uub.staticlayer.EmployeeUtils;
 import uub.staticlayer.HashEncoder;
 import uub.staticlayer.HelperUtils;
 
-public class EmployeeHelper {
+public class EmployeeHelper extends UserHelper {
 
 	protected IEmployeeDao employeeDao;
 	protected IAccountDao accountDao;
-	protected IUserDao userDao;
 	protected ICustomerDao customerDao;
+	private IBranchDao branchDao;
 
 	public EmployeeHelper() throws CustomBankException {
 
@@ -37,61 +37,57 @@ public class EmployeeHelper {
 			Class<?> EmployeeDao = Class.forName("uub.persistentlayer.EmployeeDao");
 			Constructor<?> empDao = EmployeeDao.getDeclaredConstructor();
 
-			Class<?> UserDao = Class.forName("uub.persistentlayer.UserDao");
-			Constructor<?> useDao = UserDao.getDeclaredConstructor();
-
 			Class<?> CustomerDao = Class.forName("uub.persistentlayer.CustomerDao");
 			Constructor<?> cusDao = CustomerDao.getDeclaredConstructor();
 
+			Class<?> BranchDao = Class.forName("uub.persistentlayer.BranchDao");
+			Constructor<?> branDao = BranchDao.getDeclaredConstructor();
+
 			accountDao = (IAccountDao) accDao.newInstance();
 			employeeDao = (IEmployeeDao) empDao.newInstance();
-			userDao = (IUserDao) useDao.newInstance();
 			customerDao = (ICustomerDao) cusDao.newInstance();
+			branchDao = (IBranchDao) branDao.newInstance();
 
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
 				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 
-			throw new CustomBankException("Error getting Data ! ", e);
+			throw new CustomBankException(Exceptions.DATABASE_CONNECTION_ERROR, e);
 		}
 
 	}
 
-
-
 	public Employee getEmployee(int id) throws CustomBankException {
-		
 
 		List<Employee> employees = employeeDao.getEmployees(id);
 
 		if (!employees.isEmpty()) {
 			return employees.get(0);
 		} else {
-			throw new CustomBankException("Employee not found !");
+			throw new CustomBankException(Exceptions.EMPLOYEE_NOT_FOUND);
 		}
 	}
 
+	public Map<Integer, Map<Integer, Account>> getActiveAccounts(int branchId, int limit, int offSet)
+			throws CustomBankException {
 
-	public Map<Integer, Map<Integer,Account>> getActiveAccounts(int branchId,int limit, int offSet) throws CustomBankException {
-
-		return accountDao.getBranchAccounts(branchId, AccountStatus.ACTIVE, limit,offSet);
+		return accountDao.getBranchAccounts(branchId, AccountStatus.ACTIVE, limit, offSet);
 	}
 
-	public Map<Integer, Map<Integer,Account>> getInactiveAccounts(int branchId,int limit, int offSet) throws CustomBankException {
+	public Map<Integer, Map<Integer, Account>> getInactiveAccounts(int branchId, int limit, int offSet)
+			throws CustomBankException {
 
-		return accountDao.getBranchAccounts(branchId, AccountStatus.INACTIVE,limit,offSet);
+		return accountDao.getBranchAccounts(branchId, AccountStatus.INACTIVE, limit, offSet);
 	}
 
-	public List<User> getActiveCustomers(int limit, int offSet) throws CustomBankException {
+	public Branch getBranch(int id) throws CustomBankException {
+		List<Branch> branches = branchDao.getBranch(id);
 
-		return userDao.getAllUsers(UserType.CUSTOMER,UserStatus.ACTIVE,limit,offSet);
+		if (!branches.isEmpty()) {
+			return branches.get(0);
+		} else {
+			throw new CustomBankException(Exceptions.BRANCH_NOT_FOUND);
+		}
 	}
-
-	public List<User> getInactiveCustomers(int limit, int offSet) throws CustomBankException {
-
-		return userDao.getAllUsers(UserType.CUSTOMER, UserStatus.INACTIVE,limit,offSet);
-	}
-
-
 
 	public void activateAcc(int accNo) throws CustomBankException {
 
@@ -102,7 +98,7 @@ public class EmployeeHelper {
 		int result = accountDao.updateAccount(account);
 
 		if (result == 0) {
-			throw new CustomBankException("Account not found");
+			throw new CustomBankException(Exceptions.ACCOUNT_NOT_FOUND);
 		}
 	}
 
@@ -115,20 +111,40 @@ public class EmployeeHelper {
 		int result = accountDao.updateAccount(account);
 
 		if (result == 0) {
-			throw new CustomBankException("Account not found");
+			throw new CustomBankException(Exceptions.ACCOUNT_NOT_FOUND);
 		}
+
+	}
+
+	public void addAccount(Account account) throws CustomBankException {
+
+		HelperUtils.nullCheck(account);
+
+		CustomerHelper customerHelper = new CustomerHelper();
+
+		customerHelper.getCustomer(account.getUserId());
+
+		account.setBalance(0);
+
+		account.setStatus(AccountStatus.ACTIVE);
+
+		accountDao.addAccounts(List.of(account));
 
 	}
 
 	public void addCustomer(Customer customer) throws CustomBankException {
 
 		HelperUtils.nullCheck(customer);
-		
+
 		customer.setStatus(UserStatus.ACTIVE);
 
 		try {
-			if (EmployeeUtils.validatePhone(customer.getPhone()) && EmployeeUtils.validateEmail(customer.getEmail())
-					&& EmployeeUtils.validatePass(customer.getPassword())) {
+			if (EmployeeUtils.validatePhone(customer.getPhone()) 
+					&& EmployeeUtils.validateEmail(customer.getEmail())
+					&& EmployeeUtils.validatePass(customer.getPassword())
+					&& EmployeeUtils.validateAadhar(customer.getAadhar())
+					&& EmployeeUtils.validatePAN(customer.getPAN())) {
+				
 
 				String password = customer.getPassword();
 				customer.setPassword(HashEncoder.encode(password));
@@ -136,13 +152,10 @@ public class EmployeeHelper {
 				customerDao.addCustomer(List.of(customer));
 			}
 		} catch (Exception e) {
-			throw new CustomBankException("Signup failed ! " + e.getMessage());
+			throw new CustomBankException(Exceptions.SIGNUP_FAILED + e.getMessage());
 
 		}
 
 	}
-
-
-
 
 }

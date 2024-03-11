@@ -2,19 +2,20 @@ package uub.logicallayer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDate;
 import java.util.List;
 
-import uub.enums.TransactionStatus;
+import uub.enums.Exceptions;
 import uub.enums.TransferType;
+import uub.model.Account;
 import uub.model.Transaction;
+import uub.persistentinterfaces.IAccountDao;
 import uub.persistentinterfaces.ITransactionDao;
 import uub.staticlayer.CustomBankException;
-import uub.staticlayer.DateUtils;
-import uub.staticlayer.HelperUtils;
 import uub.staticlayer.TransactionUtils;
 
 public class TransactionHelper {
+	
+	private IAccountDao accountDao;
 	private ITransactionDao transactionDao;
 
 	public TransactionHelper() throws CustomBankException {
@@ -23,60 +24,38 @@ public class TransactionHelper {
 
 			Class<?> TransactionDao = Class.forName("uub.persistentlayer.TransactionDao");
 			Constructor<?> transDao = TransactionDao.getDeclaredConstructor();
+			
+			Class<?> AccountDao = Class.forName("uub.persistentlayer.AccountDao");
+			Constructor<?> accDao = AccountDao.getDeclaredConstructor();
+
+			accountDao = (IAccountDao) accDao.newInstance();
 
 			transactionDao = (ITransactionDao) transDao.newInstance();
 
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
 				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 
-			throw new CustomBankException("Error getting Data ! ", e);
+			throw new CustomBankException(Exceptions.DATABASE_CONNECTION_ERROR, e);
+		}
+
+	}
+	
+	public Account getAccount(int accNo) throws CustomBankException {
+
+		List<Account> accounts = accountDao.getAccount(accNo);
+
+		if (!accounts.isEmpty()) {
+
+			return accounts.get(0);
+
+		} else {
+			throw new CustomBankException(Exceptions.ACCOUNT_NOT_FOUND);
 		}
 
 	}
 
 
-	public void makeTransaction(Transaction transaction, String password) throws CustomBankException {
-
-		HelperUtils.nullCheck(transaction);
-		HelperUtils.nullCheck(password);
-
-		validateTransaction(transaction);
-
-		AccountHelper accountHelper = new AccountHelper();
-		try {
-
-			accountHelper.accountAuth(transaction.getAccNo(), password);
-			String id = TransactionUtils.generateUniqueId(transaction.getAccNo(), transaction.getTransactionAcc());
-			transaction.setId(id);
-
-			transaction.setStatus(TransactionStatus.SUCCESS);
-
-			TransferType type = transaction.getType();
-
-			switch (type) {
-
-			case WITHDRAW:
-			case DEPOSIT: {
-				selfTransfer(transaction, type);
-				break;
-			}
-			case INTER_BANK: {
-				outBankTransfer(transaction);
-				break;
-			}
-			case INTRA_BANK: {
-				inBankTransfer(transaction);
-				break;
-			}
-			}
-
-		} catch (CustomBankException e) {
-			throw new CustomBankException("Transaction Failed ! ", e);
-		}
-
-	}
-
-	private void selfTransfer(Transaction transaction, TransferType type) throws CustomBankException {
+	public void selfTransfer(Transaction transaction, TransferType type) throws CustomBankException {
 
 		if (type == TransferType.WITHDRAW) {
 
@@ -90,7 +69,7 @@ public class TransactionHelper {
 
 	}
 
-	private void outBankTransfer(Transaction transaction) throws CustomBankException {
+	public void outBankTransfer(Transaction transaction) throws CustomBankException {
 
 		transaction.setAmount(0 - transaction.getAmount());
 
@@ -100,7 +79,7 @@ public class TransactionHelper {
 
 	}
 
-	private void inBankTransfer(Transaction transaction) throws CustomBankException {
+	public void inBankTransfer(Transaction transaction) throws CustomBankException {
 
 		transaction.setAmount(0 - transaction.getAmount());
 
@@ -115,30 +94,27 @@ public class TransactionHelper {
 
 	private void setTransaction(Transaction transaction) throws CustomBankException {
 
-		AccountHelper accountHelper = new AccountHelper();
 
 		transaction.setTime(System.currentTimeMillis());
-
+		
 		int accNo = transaction.getAccNo();
-		accountHelper.validateAccount(accNo);
+		
+		Account account = getAccount(accNo);
 
-		double balance = accountHelper.getBalance(accNo);
+
+		TransactionUtils.validateAccount(account);
+
+		double balance = account.getBalance();
+		
 		double closingBalance = balance + transaction.getAmount();
+		
+		if(closingBalance < 0) {
+			throw new CustomBankException(Exceptions.BALANCE_INSUFFICIENT);
+		}
 
 		transaction.setOpeningBal(balance);
 		transaction.setClosingBal(closingBalance);
 
-	}
-
-	private void validateTransaction(Transaction transaction) throws CustomBankException {
-
-		if (transaction.getAccNo() == transaction.getTransactionAcc()) {
-			throw new CustomBankException("Invalid receiver account no.");
-		}
-		if (transaction.getAmount() <= 0) {
-			throw new CustomBankException("Invalid amount");
-
-		}
 	}
 
 	private Transaction generateReceiverTransaction(Transaction transaction) throws CustomBankException {
@@ -157,8 +133,9 @@ public class TransactionHelper {
 		rTransaction.setTransactionAcc(transaction.getAccNo());
 		rTransaction.setAmount(0 - transaction.getAmount());
 
-		AccountHelper accountHelper = new AccountHelper();
-		int userId = accountHelper.getUserId(accNo);
+		Account account = getAccount(accNo);
+		
+		int userId = account.getUserId();
 
 		rTransaction.setUserId(userId);
 
@@ -166,31 +143,8 @@ public class TransactionHelper {
 
 	}
 
-	public List<Transaction> getNDaysTransaction(int accNo, int days, int limit, int page) throws CustomBankException {
-
-		long todayMillis = System.currentTimeMillis();
-
-		long ansMillis = todayMillis - 86400000 * (days);
-
-		return transactionDao.getTransactions(accNo, ansMillis, todayMillis, limit, (page - 1) * limit);
-
-	}
-
-	public List<Transaction> getTransaction(int accNo, String from, String to, int limit, int page)
-			throws CustomBankException {
-
-		HelperUtils.nullCheck(from);
-		HelperUtils.nullCheck(to);
-
-		LocalDate fromDate = LocalDate.parse(from);
-		LocalDate toDate = LocalDate.parse(to);
-
-		toDate = toDate.plusDays(1);
-
-		long fromMillis = DateUtils.formatDate(fromDate);
-		long toMillis = DateUtils.formatDate(toDate);
-
-		return transactionDao.getTransactions(accNo, fromMillis, toMillis, limit, (page - 1) * limit);
+	public List<Transaction> getTransactions(int accNo, long from, long to, int limit, int offSet) throws CustomBankException{
+		return transactionDao.getTransactions(accNo, from, to, limit, offSet);
 	}
 
 }

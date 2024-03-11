@@ -24,7 +24,6 @@ public class Transaction {
 	}
 
 
-
 	@Override
 	public String toString() {
 		return "Transaction [id=" + id + ", userId=" + userId + ", accNo=" + accNo + ", transactionAcc="
