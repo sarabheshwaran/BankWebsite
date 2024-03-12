@@ -18,6 +18,8 @@ public class TransactionHelper {
 	private IAccountDao accountDao;
 	private ITransactionDao transactionDao;
 
+	public static LRUCache<Integer,Account> accountCache = new LRUCache<Integer, Account>(50);
+
 	public TransactionHelper() throws CustomBankException {
 
 		try {
@@ -41,16 +43,27 @@ public class TransactionHelper {
 	}
 	
 	public Account getAccount(int accNo) throws CustomBankException {
+		
+		Account account = accountCache.get(accNo);
+		
+		if(account != null) {
+			return account;
+		}else {
 
+		
 		List<Account> accounts = accountDao.getAccount(accNo);
 
 		if (!accounts.isEmpty()) {
 
-			return accounts.get(0);
+			account =  accounts.get(0);
+			
+			accountCache.put(accNo, account);
+			
+			return account;
 
 		} else {
 			throw new CustomBankException(Exceptions.ACCOUNT_NOT_FOUND);
-		}
+		}}
 
 	}
 

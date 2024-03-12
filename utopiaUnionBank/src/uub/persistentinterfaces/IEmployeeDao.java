@@ -3,6 +3,7 @@ package uub.persistentinterfaces;
 import java.util.List;
 import java.util.Map;
 
+import uub.enums.UserStatus;
 import uub.model.Employee;
 import uub.staticlayer.CustomBankException;
 
@@ -14,6 +15,8 @@ public interface IEmployeeDao {
 
 	List<Employee> getEmployees(int id) throws CustomBankException;
 
-	Map<Integer, Employee> getEmployeesWithBranch(int branchId, int limit, int offSet) throws CustomBankException;
+	Map<Integer, Employee> getEmployeesWithBranch(int branchId, UserStatus status, int limit, int offSet)
+			throws CustomBankException;
 
+	
 }

@@ -3,10 +3,13 @@ package uub.logicallayer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 
 import uub.enums.Exceptions;
 import uub.enums.UserStatus;
 import uub.enums.UserType;
+import uub.model.Account;
+import uub.model.Customer;
 import uub.model.User;
 import uub.persistentinterfaces.IUserDao;
 import uub.staticlayer.CustomBankException;
@@ -16,6 +19,10 @@ import uub.staticlayer.HelperUtils;
 public class UserHelper {
 	
 	protected IUserDao userDao;
+	public static LRUCache<Integer,Customer> customerCache = new LRUCache<Integer, Customer>(50);
+	public static LRUCache<Integer, Map<Integer, Account>> accountMapCache = new LRUCache<Integer, Map<Integer,Account>>(50);
+	
+	
 	
 	public UserHelper() throws CustomBankException {
 
@@ -38,7 +45,7 @@ public class UserHelper {
 
 	public User getUser(int id) throws CustomBankException {
 
-		List<User> users = userDao.getUserWithId(id,UserStatus.ACTIVE);
+		List<User> users = userDao.getUser(id,UserStatus.ACTIVE);
 
 		if (!users.isEmpty()) {
 			return users.get(0);

@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,10 +22,32 @@ public class AccountDao implements IAccountDao {
 	@Override
 	public Map<Integer, Account> getUserAccounts(int userId, AccountStatus status) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM ACCOUNTS WHERE USER_ID = " + userId + " AND ACCOUNTS.STATUS = "
-				+ status.getStatus();
+		String getQuery = "SELECT * FROM ACCOUNTS WHERE USER_ID = ? AND ACCOUNTS.STATUS = ? ";
 
-		return getAccountsWithUser(getQuery);
+		Map<Integer, Account> accountMap = new HashMap<Integer, Account>();
+
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(getQuery)) {
+
+			statement.setInt(1, userId);
+			statement.setObject(2, status.getStatus());
+			
+			ResultSet resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+
+				Account account;
+
+				account = mapAccount(resultSet);
+				accountMap.put(account.getAccNo(), account);
+
+			}
+
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+		return accountMap;
+		
 
 	}
 
@@ -34,18 +55,71 @@ public class AccountDao implements IAccountDao {
 	public Map<Integer, Map<Integer, Account>> getBranchAccounts(int branchId, AccountStatus status, int limit,
 			int offSet) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM ACCOUNTS WHERE  ACCOUNTS.STATUS = " + status.getStatus() + " AND BRANCH_ID = "
-				+ branchId + " LIMIT " + limit + " OFFSET " + offSet;
+		String getQuery = "SELECT * FROM ACCOUNTS WHERE  BRANCH_ID = ? AND ACCOUNTS.STATUS = ? LIMIT ? OFFSET ?";
 
-		return getAccountsWithBranch(getQuery);
+
+		Map<Integer, Map<Integer, Account>> accountMap = new HashMap<Integer, Map<Integer, Account>>();
+
+
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(getQuery)) {
+
+			statement.setInt(1, branchId);
+			statement.setObject(2, status.getStatus());
+			statement.setInt(3, limit);
+			statement.setInt(4, offSet);
+			
+			ResultSet resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+
+				Account account;
+
+				int id = resultSet.getInt("USER_ID");
+
+				if (!accountMap.containsKey(id)) {
+
+					accountMap.put(id, new HashMap<Integer, Account>());
+
+				}
+				account = mapAccount(resultSet);
+				accountMap.get(id).put(account.getAccNo(), account);
+
+			}
+
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+		return accountMap;
+		
 	}
 
 	@Override
 	public List<Account> getAccount(int accNo) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM ACCOUNTS WHERE ACC_NO = " + accNo;
+		String getQuery = "SELECT * FROM ACCOUNTS WHERE ACC_NO = ? " ;
 
-		return getAccounts(getQuery);
+		List<Account> accounts = new ArrayList<Account>();
+
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(getQuery)) {
+
+			statement.setInt(1, accNo);
+			
+			ResultSet resultSet = statement.executeQuery();
+
+			Account account;
+			while (resultSet.next()) {
+
+				account = mapAccount(resultSet);
+				accounts.add(account);
+
+			}
+
+			return accounts;
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
 
 	}
 
@@ -95,91 +169,6 @@ public class AccountDao implements IAccountDao {
 			throw new CustomBankException(e.getMessage());
 		}
 
-	}
-
-	private List<Account> getAccounts(String query) throws CustomBankException {
-
-		HelperUtils.nullCheck(query);
-
-		List<Account> accounts = new ArrayList<Account>();
-
-		try (Connection connection = ConnectionManager.getConnection();
-				Statement statement = connection.createStatement()) {
-
-			ResultSet resultSet = statement.executeQuery(query);
-
-			Account account;
-			while (resultSet.next()) {
-
-				account = mapAccount(resultSet);
-				accounts.add(account);
-
-			}
-
-			return accounts;
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-
-	}
-
-	private Map<Integer, Account> getAccountsWithUser(String query) throws CustomBankException {
-
-		HelperUtils.nullCheck(query);
-
-		Map<Integer, Account> accountMap = new HashMap<Integer, Account>();
-
-		try (Connection connection = ConnectionManager.getConnection();
-				Statement statement = connection.createStatement()) {
-
-			ResultSet resultSet = statement.executeQuery(query);
-			while (resultSet.next()) {
-
-				Account account;
-
-				account = mapAccount(resultSet);
-				accountMap.put(account.getAccNo(), account);
-
-			}
-
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-
-		return accountMap;
-	}
-
-	private Map<Integer, Map<Integer, Account>> getAccountsWithBranch(String query) throws CustomBankException {
-
-		HelperUtils.nullCheck(query);
-
-		Map<Integer, Map<Integer, Account>> accountMap = new HashMap<Integer, Map<Integer, Account>>();
-
-		try (Connection connection = ConnectionManager.getConnection();
-				Statement statement = connection.createStatement()) {
-
-			ResultSet resultSet = statement.executeQuery(query);
-			while (resultSet.next()) {
-
-				Account account;
-
-				int id = resultSet.getInt("USER_ID");
-
-				if (!accountMap.containsKey(id)) {
-
-					accountMap.put(id, new HashMap<Integer, Account>());
-
-				}
-				account = mapAccount(resultSet);
-				accountMap.get(id).put(account.getAccNo(), account);
-
-			}
-
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-
-		return accountMap;
 	}
 
 	private Account mapAccount(ResultSet resultSet) throws SQLException {

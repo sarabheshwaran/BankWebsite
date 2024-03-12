@@ -4,12 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import uub.enums.UserStatus;
 import uub.model.Employee;
 import uub.persistentinterfaces.IEmployeeDao;
 import uub.staticlayer.ConnectionManager;
@@ -20,20 +20,60 @@ public class EmployeeDao implements IEmployeeDao {
 	@Override
 	public List<Employee> getEmployees(int id) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.ID = " + id;
+		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.ID = ?";
 
-		return getEmployees(getQuery);
+		List<Employee> employees = new ArrayList<Employee>();
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(getQuery)) {
+			statement.setInt(1, id);
+
+			ResultSet resultSet = statement.executeQuery();
+
+			while (resultSet.next()) {
+
+				Employee ResultEmployee = mapEmployee(resultSet);
+				employees.add(ResultEmployee);
+			}
+
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+		return employees;
 
 	}
 
 	@Override
-	public Map<Integer,Employee> getEmployeesWithBranch(int branchId, int limit, int offSet)
+	public Map<Integer,Employee> getEmployeesWithBranch(int branchId, UserStatus status, int limit, int offSet)
 			throws CustomBankException {
 
-		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.BRANCH_ID = "
-				+ branchId + " AND STATUS = 1" + " LIMIT " + limit + " OFFSET " + offSet;
+		String getQuery = "SELECT * FROM EMPLOYEE JOIN USER ON EMPLOYEE.ID = USER.ID WHERE EMPLOYEE.BRANCH_ID = ? AND STATUS = ?  LIMIT ? OFFSET ?";
 
-		return getEmployeesOfBranch(getQuery);
+		Map<Integer,Employee> employeeMap = new HashMap<Integer, Employee>();
+
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(getQuery)) {
+			statement.setInt(1, branchId);
+			statement.setInt(2, status.getStatus());
+			statement.setInt(3, limit);
+			statement.setInt(4, offSet);
+
+			ResultSet resultSet = statement.executeQuery();
+
+			while (resultSet.next()) {
+
+				Employee employee;
+
+
+				employee = mapEmployee(resultSet);
+				employeeMap.put(employee.getId(),employee);
+			}
+
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+		return employeeMap;
 
 	}
 
@@ -131,53 +171,6 @@ public class EmployeeDao implements IEmployeeDao {
 			throw new CustomBankException(e.getMessage());
 		}
 
-	}
-
-	private List<Employee> getEmployees(String query) throws CustomBankException {
-
-		List<Employee> employees = new ArrayList<Employee>();
-
-		try (Connection connection = ConnectionManager.getConnection();
-				Statement statement = connection.createStatement()) {
-
-			ResultSet resultSet = statement.executeQuery(query);
-
-			while (resultSet.next()) {
-
-				Employee ResultEmployee = mapEmployee(resultSet);
-				employees.add(ResultEmployee);
-			}
-
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-
-		return employees;
-	}
-
-	private Map<Integer,Employee> getEmployeesOfBranch(String query) throws CustomBankException {
-
-	Map<Integer,Employee> employeeMap = new HashMap<Integer, Employee>();
-
-		try (Connection connection = ConnectionManager.getConnection();
-				Statement statement = connection.createStatement()) {
-
-			ResultSet resultSet = statement.executeQuery(query);
-
-			while (resultSet.next()) {
-
-				Employee employee;
-
-
-				employee = mapEmployee(resultSet);
-				employeeMap.put(employee.getId(),employee);
-			}
-
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-
-		return employeeMap;
 	}
 
 	private String getFieldList(Employee employee) {

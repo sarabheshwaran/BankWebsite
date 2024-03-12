@@ -9,8 +9,9 @@ import uub.staticlayer.CustomBankException;
 
 public interface IUserDao {
 
-	List<User> getUserWithId(int userId, UserStatus status) throws CustomBankException;
 
 	int updateUser(User user) throws CustomBankException;
+
+	List<User> getUser(int userId, UserStatus status) throws CustomBankException;
 
 }

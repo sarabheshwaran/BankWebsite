@@ -30,7 +30,7 @@ public class TransactionDao implements ITransactionDao {
 	public List<Transaction> getTransactionsOfUser(int userId, long from, long to, int limit, int offSet)
 			throws CustomBankException {
 
-		String getQuery = "SELECT * FROM TRANSACTION WHERE ACC_NO =" + userId + " AND TIME BETWEEN " + from + " AND "
+		String getQuery = "SELECT * FROM TRANSACTION WHERE USER_ID =" + userId + " AND TIME BETWEEN " + from + " AND "
 				+ to + " ORDER BY ID DESC  LIMIT  " + limit + " OFFSET " + offSet;
 
 		return getTransactions(getQuery);

@@ -20,12 +20,13 @@ import uub.staticlayer.DateUtils;
 import uub.staticlayer.HelperUtils;
 import uub.staticlayer.TransactionUtils;
 
-public class CustomerHelper extends UserHelper{
+public class CustomerHelper extends UserHelper {
 
-	private IAccountDao accountDao ;
-	private ICustomerDao customerDao;
+	protected IAccountDao accountDao;
+	protected ICustomerDao customerDao;
 
 	public CustomerHelper() throws CustomBankException {
+
 		try {
 			Class<?> AccountDao = Class.forName("uub.persistentlayer.AccountDao");
 			Constructor<?> accDao = AccountDao.getDeclaredConstructor();
@@ -38,19 +39,27 @@ public class CustomerHelper extends UserHelper{
 
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
 				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			
-			throw new CustomBankException( Exceptions.DATABASE_CONNECTION_ERROR, e);
+
+			throw new CustomBankException(Exceptions.DATABASE_CONNECTION_ERROR, e);
 		}
 	}
 
-
 	public Customer getCustomer(int id) throws CustomBankException {
+
+		Customer customer = customerCache.get(id);
+
+
+		if (customer != null) {
+			return customer;
+		}
 
 		List<Customer> customers = customerDao.getCustomers(id);
 
-		
 		if (!customers.isEmpty()) {
-			return customers.get(0);
+			customer = customers.get(0);
+			UserHelper.customerCache.put(id, customer);
+			return customer;
+
 		} else {
 			throw new CustomBankException(Exceptions.CUSTOMER_NOT_FOUND);
 		}
@@ -59,33 +68,40 @@ public class CustomerHelper extends UserHelper{
 
 	public Map<Integer, Account> getActiveAccounts(int customerId) throws CustomBankException {
 
-		return accountDao.getUserAccounts(customerId, AccountStatus.ACTIVE);
+		Map<Integer, Account> accounts = accountMapCache.get(customerId);
 		
-	}
-	
-	public Map<Integer, Map<Integer, Account>> getInactiveAccounts(int customerId, int limit, int offSet) throws CustomBankException {
+		if (accounts != null) {
+			return accounts;
+		} else {
 
-		return accountDao.getBranchAccounts(customerId, AccountStatus.INACTIVE, limit, offSet);
-		
-	}
-	
+			accounts = accountDao.getUserAccounts(customerId, AccountStatus.ACTIVE);
 
+			if (!accounts.isEmpty()) {
+
+				accountMapCache.put(customerId, accounts);
+				return accounts;
+				
+
+			} else {
+				throw new CustomBankException(Exceptions.ACCOUNT_NOT_FOUND);
+			}
+		}
+
+	}
 
 	public void makeTransaction(Transaction transaction, String password) throws CustomBankException {
 
 		HelperUtils.nullCheck(transaction);
 		HelperUtils.nullCheck(password);
-		
+
 		TransactionHelper transactionHelper = new TransactionHelper();
-		
 
 		TransactionUtils.validateTransaction(transaction);
-
 
 		try {
 
 			passwordValidate(transaction.getUserId(), password);
-			
+
 			String id = TransactionUtils.generateUniqueId(transaction.getAccNo(), transaction.getTransactionAcc());
 			transaction.setId(id);
 
@@ -115,7 +131,6 @@ public class CustomerHelper extends UserHelper{
 		}
 
 	}
-	
 
 	public List<Transaction> getNDaysTransaction(int accNo, int days, int limit, int page) throws CustomBankException {
 
@@ -131,7 +146,6 @@ public class CustomerHelper extends UserHelper{
 	public List<Transaction> getTransaction(int accNo, String from, String to, int limit, int page)
 			throws CustomBankException {
 
-		
 		HelperUtils.nullCheck(from);
 		HelperUtils.nullCheck(to);
 
@@ -146,6 +160,5 @@ public class CustomerHelper extends UserHelper{
 
 		return transactionHelper.getTransactions(accNo, fromMillis, toMillis, limit, (page - 1) * limit);
 	}
-
 
 }

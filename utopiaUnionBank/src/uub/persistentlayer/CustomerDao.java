@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -102,9 +101,26 @@ public class CustomerDao implements ICustomerDao {
 	@Override
 	public List<Customer> getCustomers(int id) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM CUSTOMER JOIN USER ON CUSTOMER.ID = USER.ID WHERE CUSTOMER.ID = " + id;
+		String getQuery = "SELECT * FROM CUSTOMER JOIN USER ON CUSTOMER.ID = USER.ID WHERE CUSTOMER.ID = ?";
 
-		return getCustomers(getQuery);
+		List<Customer> customers = new ArrayList<Customer>();
+
+		try (Connection connection = ConnectionManager.getConnection();
+				PreparedStatement statement = connection.prepareStatement(getQuery)) {
+
+			statement.setInt(1, id);
+			ResultSet resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+
+				Customer resultCustomer = mapCustomer(resultSet);
+				customers.add(resultCustomer);
+			}
+
+		} catch (SQLException e) {
+			throw new CustomBankException(e.getMessage());
+		}
+
+		return customers;
 
 	}
 
@@ -130,26 +146,6 @@ public class CustomerDao implements ICustomerDao {
 
 	}
 
-	private List<Customer> getCustomers(String query) throws CustomBankException {
-
-		List<Customer> customers = new ArrayList<Customer>();
-
-		try (Connection connection = ConnectionManager.getConnection();
-				Statement statement = connection.createStatement()) {
-
-			ResultSet resultSet = statement.executeQuery(query);
-			while (resultSet.next()) {
-
-				Customer resultCustomer = mapCustomer(resultSet);
-				customers.add(resultCustomer);
-			}
-
-		} catch (SQLException e) {
-			throw new CustomBankException(e.getMessage());
-		}
-
-		return customers;
-	}
 
 	private String getFieldList(Customer customer) {
 

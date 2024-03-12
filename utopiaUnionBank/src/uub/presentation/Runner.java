@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import uub.enums.UserType;
+import uub.logicallayer.TransactionHelper;
 import uub.logicallayer.UserHelper;
 import uub.staticlayer.CustomBankException;
 import uub.staticlayer.HelperUtils;
@@ -41,6 +42,11 @@ public class Runner {
 			logger.fine("1. Login");
 			logger.fine("1. About");
 			logger.fine("3. Exit");
+			logger.info(UserHelper.customerCache.toString());
+
+			logger.info(UserHelper.accountMapCache.toString());
+			
+			logger.info(TransactionHelper.accountCache.toString());
 			int choice = scanner.nextInt();
 			scanner.nextLine();
 

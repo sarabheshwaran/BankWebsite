@@ -41,7 +41,7 @@ public class AdminHelper extends EmployeeHelper {
 	public Map<Integer, Employee> getEmployees(int branchId, int limit, int offSet)
 			throws CustomBankException {
 
-		return employeeDao.getEmployeesWithBranch(branchId, limit, offSet);
+		return employeeDao.getEmployeesWithBranch(branchId,UserStatus.ACTIVE, limit, offSet);
 	}
 
 

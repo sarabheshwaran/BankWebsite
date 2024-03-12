@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,17 +16,7 @@ import uub.staticlayer.HelperUtils;
 
 public class UserDao implements IUserDao {
 
-	@Override
-	public List<User> getUserWithId(int userId, UserStatus status) throws CustomBankException {
-
-		String getQuery = "SELECT * FROM USER WHERE ID = '" + userId + "' AND STATUS = "+ status.getStatus();
-
-		return getUsers(getQuery);
-
-	}
-
-
-
+	
 	@Override
 	public int updateUser(User user) throws CustomBankException {
 
@@ -51,13 +40,17 @@ public class UserDao implements IUserDao {
 
 	}
 
-	private List<User> getUsers(String query) throws CustomBankException {
+	@Override
+	public List<User> getUser(int userId, UserStatus status) throws CustomBankException {
 
+		String getQuery = "SELECT * FROM USER WHERE ID = '" + userId + "' AND STATUS = "+ status.getStatus();
+
+		
 		List<User> users = new ArrayList<User>();
 
 		try (Connection connection = ConnectionManager.getConnection();
-			Statement statement = connection.createStatement();) {
-			ResultSet resultSet = statement.executeQuery(query);
+			PreparedStatement statement = connection.prepareStatement(getQuery);) {
+			ResultSet resultSet = statement.executeQuery();
 
 			while (resultSet.next()) {
 

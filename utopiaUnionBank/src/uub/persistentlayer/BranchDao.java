@@ -48,7 +48,7 @@ public class BranchDao implements IBranchDao {
 
 		List<Branch> branches = new ArrayList<>();
 
-		String getQuery = "SELECT * FROM BRANCH WHERE ID = " + id;
+		String getQuery = "SELECT * FROM BRANCH WHERE ID = ?";
 
 		try (Connection connection = ConnectionManager.getConnection();
 				PreparedStatement statement = connection.prepareStatement(getQuery);) {

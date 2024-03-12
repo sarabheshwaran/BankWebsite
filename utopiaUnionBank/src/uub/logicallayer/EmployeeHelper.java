@@ -12,40 +12,28 @@ import uub.model.Account;
 import uub.model.Branch;
 import uub.model.Customer;
 import uub.model.Employee;
-import uub.persistentinterfaces.IAccountDao;
 import uub.persistentinterfaces.IBranchDao;
-import uub.persistentinterfaces.ICustomerDao;
 import uub.persistentinterfaces.IEmployeeDao;
 import uub.staticlayer.CustomBankException;
 import uub.staticlayer.EmployeeUtils;
 import uub.staticlayer.HashEncoder;
 import uub.staticlayer.HelperUtils;
 
-public class EmployeeHelper extends UserHelper {
+public class EmployeeHelper extends CustomerHelper {
 
 	protected IEmployeeDao employeeDao;
-	protected IAccountDao accountDao;
-	protected ICustomerDao customerDao;
 	private IBranchDao branchDao;
 
 	public EmployeeHelper() throws CustomBankException {
 
 		try {
-			Class<?> AccountDao = Class.forName("uub.persistentlayer.AccountDao");
-			Constructor<?> accDao = AccountDao.getDeclaredConstructor();
-
 			Class<?> EmployeeDao = Class.forName("uub.persistentlayer.EmployeeDao");
 			Constructor<?> empDao = EmployeeDao.getDeclaredConstructor();
-
-			Class<?> CustomerDao = Class.forName("uub.persistentlayer.CustomerDao");
-			Constructor<?> cusDao = CustomerDao.getDeclaredConstructor();
 
 			Class<?> BranchDao = Class.forName("uub.persistentlayer.BranchDao");
 			Constructor<?> branDao = BranchDao.getDeclaredConstructor();
 
-			accountDao = (IAccountDao) accDao.newInstance();
 			employeeDao = (IEmployeeDao) empDao.newInstance();
-			customerDao = (ICustomerDao) cusDao.newInstance();
 			branchDao = (IBranchDao) branDao.newInstance();
 
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException

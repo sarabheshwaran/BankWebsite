@@ -26,7 +26,7 @@ public class Customer extends User{
 	}
 	
 	public String toString() {
-		return "Customer ["+ toString(0) +", aadhar=" + aadhar + ", pAN=" + pan + ", address=" + address + "]";
+		return "\nCustomer ["+ toString(0) +", aadhar=" + aadhar + ", pAN=" + pan + ", address=" + address + "]\n";
 	}
 	public String getAadhar() {
 		return aadhar;
