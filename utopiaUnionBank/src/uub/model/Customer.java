@@ -1,10 +1,12 @@
 package uub.model;
 
+
 import uub.enums.UserStatus;
 import uub.enums.UserType;
 
 public class Customer extends User{
 
+	private static final long serialVersionUID = 1L;
 	private String aadhar;
 	private String pan;
 	private String address;

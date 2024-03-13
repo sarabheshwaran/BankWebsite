@@ -3,10 +3,11 @@ package uub.logicallayer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import uub.enums.AccountStatus;
 import uub.enums.Exceptions;
 import uub.enums.TransactionStatus;
 import uub.enums.TransferType;
@@ -48,7 +49,6 @@ public class CustomerHelper extends UserHelper {
 
 		Customer customer = customerCache.get(id);
 
-
 		if (customer != null) {
 			return customer;
 		}
@@ -57,7 +57,7 @@ public class CustomerHelper extends UserHelper {
 
 		if (!customers.isEmpty()) {
 			customer = customers.get(0);
-			UserHelper.customerCache.put(id, customer);
+			UserHelper.customerCache.set(id, customer);
 			return customer;
 
 		} else {
@@ -66,21 +66,57 @@ public class CustomerHelper extends UserHelper {
 
 	}
 
-	public Map<Integer, Account> getActiveAccounts(int customerId) throws CustomBankException {
+	public Map<Integer, Account> getAccounts(int customerId) throws CustomBankException {
 
-		Map<Integer, Account> accounts = accountMapCache.get(customerId);
-		
-		if (accounts != null) {
+		List<Integer> accNos = accountMapCache.get(customerId);
+
+		Map<Integer, Account> accounts = new HashMap<Integer, Account>();
+
+		if (accNos != null) {
+
+			for (int accNo : accNos) {
+
+				accounts.put(accNo, getAccount(accNo));
+
+			}
 			return accounts;
 		} else {
-
-			accounts = accountDao.getUserAccounts(customerId, AccountStatus.ACTIVE);
+			accounts = accountDao.getUserAccounts(customerId);
 
 			if (!accounts.isEmpty()) {
 
-				accountMapCache.put(customerId, accounts);
-				return accounts;
+				accountMapCache.set(customerId, new ArrayList<Integer>(accounts.keySet()));
 				
+				for(Account account : accounts.values()) {
+					accountCache.set(account.getAccNo(), account);
+				}
+				
+				return accounts;
+
+			} else {
+				throw new CustomBankException(Exceptions.ACCOUNT_NOT_FOUND);
+			}
+		}
+
+	}
+
+	public Account getAccount(int accNo) throws CustomBankException {
+
+		Account account = UserHelper.accountCache.get(accNo);
+
+		if (account != null) { 
+			return account;
+		} else {
+
+			List<Account> accounts = accountDao.getAccount(accNo);
+
+			if (!accounts.isEmpty()) {
+
+				account = accounts.get(0);
+
+				UserHelper.accountCache.set(accNo, account);
+
+				return account;
 
 			} else {
 				throw new CustomBankException(Exceptions.ACCOUNT_NOT_FOUND);

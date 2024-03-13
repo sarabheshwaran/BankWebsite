@@ -19,10 +19,10 @@ public class ColouredLogger extends ConsoleHandler {
                 colorCode = "\u001B[31m"; // Red
                 break;
             case "WARNING":
-                colorCode = "\u001B[37m"; // Yellow
+                colorCode = ""; // Yellow
                 break;
             case "FINEST'":
-            	colorCode = "";
+            	colorCode = "\u0033[8m";
             case "INFO":
                 colorCode = "\u001B[33m"; // SkyBlueGreen
                 break;

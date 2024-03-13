@@ -8,17 +8,14 @@ import uub.enums.Exceptions;
 import uub.enums.TransferType;
 import uub.model.Account;
 import uub.model.Transaction;
-import uub.persistentinterfaces.IAccountDao;
 import uub.persistentinterfaces.ITransactionDao;
 import uub.staticlayer.CustomBankException;
 import uub.staticlayer.TransactionUtils;
 
 public class TransactionHelper {
-	
-	private IAccountDao accountDao;
-	private ITransactionDao transactionDao;
 
-	public static LRUCache<Integer,Account> accountCache = new LRUCache<Integer, Account>(50);
+
+	private ITransactionDao transactionDao;
 
 	public TransactionHelper() throws CustomBankException {
 
@@ -26,11 +23,6 @@ public class TransactionHelper {
 
 			Class<?> TransactionDao = Class.forName("uub.persistentlayer.TransactionDao");
 			Constructor<?> transDao = TransactionDao.getDeclaredConstructor();
-			
-			Class<?> AccountDao = Class.forName("uub.persistentlayer.AccountDao");
-			Constructor<?> accDao = AccountDao.getDeclaredConstructor();
-
-			accountDao = (IAccountDao) accDao.newInstance();
 
 			transactionDao = (ITransactionDao) transDao.newInstance();
 
@@ -41,32 +33,6 @@ public class TransactionHelper {
 		}
 
 	}
-	
-	public Account getAccount(int accNo) throws CustomBankException {
-		
-		Account account = accountCache.get(accNo);
-		
-		if(account != null) {
-			return account;
-		}else {
-
-		
-		List<Account> accounts = accountDao.getAccount(accNo);
-
-		if (!accounts.isEmpty()) {
-
-			account =  accounts.get(0);
-			
-			accountCache.put(accNo, account);
-			
-			return account;
-
-		} else {
-			throw new CustomBankException(Exceptions.ACCOUNT_NOT_FOUND);
-		}}
-
-	}
-
 
 	public void selfTransfer(Transaction transaction, TransferType type) throws CustomBankException {
 
@@ -76,9 +42,15 @@ public class TransactionHelper {
 
 		}
 
-		setTransaction(transaction);
+		Object a = Lock.get(transaction.getUserId());
 
-		transactionDao.makeTransaction(List.of(transaction));
+		synchronized (a) {
+
+			setTransaction(transaction);
+
+			transactionDao.makeTransaction(List.of(transaction));
+
+		}
 
 	}
 
@@ -86,10 +58,13 @@ public class TransactionHelper {
 
 		transaction.setAmount(0 - transaction.getAmount());
 
-		setTransaction(transaction);
+		Object a = Lock.get(transaction.getUserId());
 
-		transactionDao.makeTransaction(List.of(transaction));
+		synchronized (a) {
+			setTransaction(transaction);
 
+			transactionDao.makeTransaction(List.of(transaction));
+		}
 	}
 
 	public void inBankTransfer(Transaction transaction) throws CustomBankException {
@@ -98,30 +73,36 @@ public class TransactionHelper {
 
 		Transaction rTransaction = generateReceiverTransaction(transaction);
 
-		setTransaction(transaction);
-		setTransaction(rTransaction);
+		Object a = Lock.get(transaction.getUserId());
 
-		transactionDao.makeTransaction(List.of(transaction, rTransaction));
+		synchronized (a) {
 
+			setTransaction(transaction);
+			setTransaction(rTransaction);
+
+			transactionDao.makeTransaction(List.of(transaction, rTransaction));
+		}
 	}
 
 	private void setTransaction(Transaction transaction) throws CustomBankException {
 
+		CustomerHelper customerHelper = new CustomerHelper();
 
 		transaction.setTime(System.currentTimeMillis());
-		
-		int accNo = transaction.getAccNo();
-		
-		Account account = getAccount(accNo);
 
+		int accNo = transaction.getAccNo();
+
+		Account account = customerHelper.getAccount(accNo);
+
+		UserHelper.accountCache.rem(accNo);
 
 		TransactionUtils.validateAccount(account);
 
 		double balance = account.getBalance();
-		
+
 		double closingBalance = balance + transaction.getAmount();
-		
-		if(closingBalance < 0) {
+
+		if (closingBalance < 0) {
 			throw new CustomBankException(Exceptions.BALANCE_INSUFFICIENT);
 		}
 
@@ -131,6 +112,8 @@ public class TransactionHelper {
 	}
 
 	private Transaction generateReceiverTransaction(Transaction transaction) throws CustomBankException {
+
+		CustomerHelper customerHelper = new CustomerHelper();
 
 		Transaction rTransaction = new Transaction();
 
@@ -146,8 +129,8 @@ public class TransactionHelper {
 		rTransaction.setTransactionAcc(transaction.getAccNo());
 		rTransaction.setAmount(0 - transaction.getAmount());
 
-		Account account = getAccount(accNo);
-		
+		Account account = customerHelper.getAccount(accNo);
+
 		int userId = account.getUserId();
 
 		rTransaction.setUserId(userId);
@@ -156,7 +139,8 @@ public class TransactionHelper {
 
 	}
 
-	public List<Transaction> getTransactions(int accNo, long from, long to, int limit, int offSet) throws CustomBankException{
+	public List<Transaction> getTransactions(int accNo, long from, long to, int limit, int offSet)
+			throws CustomBankException {
 		return transactionDao.getTransactions(accNo, from, to, limit, offSet);
 	}
 

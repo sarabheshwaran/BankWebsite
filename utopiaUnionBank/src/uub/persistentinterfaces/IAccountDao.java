@@ -17,8 +17,5 @@ public interface IAccountDao {
 
 	Map<Integer, Map<Integer,Account>> getBranchAccounts(int branchId, AccountStatus status, int limit, int offSet) throws CustomBankException;
 
-	Map<Integer, Account> getUserAccounts(int userId, AccountStatus status) throws CustomBankException;
-	
-
-	
+	Map<Integer, Account> getUserAccounts(int userId) throws CustomBankException;
 }

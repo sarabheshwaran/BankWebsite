@@ -3,8 +3,10 @@ package uub.logicallayer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.Map;
 
+import uub.cachelayer.Cache;
+import uub.cachelayer.LRUCache;
+import uub.cachelayer.RedisCache;
 import uub.enums.Exceptions;
 import uub.enums.UserStatus;
 import uub.enums.UserType;
@@ -19,9 +21,9 @@ import uub.staticlayer.HelperUtils;
 public class UserHelper {
 	
 	protected IUserDao userDao;
-	public static LRUCache<Integer,Customer> customerCache = new LRUCache<Integer, Customer>(50);
-	public static LRUCache<Integer, Map<Integer, Account>> accountMapCache = new LRUCache<Integer, Map<Integer,Account>>(50);
-	
+	public static Cache<Integer,Customer> customerCache = new LRUCache<Integer, Customer>(50);
+	public static Cache<Integer,List<Integer>>  accountMapCache = new RedisCache<Integer, List<Integer>>(6379);
+	public static Cache<Integer,Account> accountCache = new RedisCache<Integer, Account>(6379);
 	
 	
 	public UserHelper() throws CustomBankException {
@@ -40,7 +42,6 @@ public class UserHelper {
 		}
 
 	}
-
 
 
 	public User getUser(int id) throws CustomBankException {

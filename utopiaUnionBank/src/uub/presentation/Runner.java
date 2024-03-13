@@ -21,7 +21,7 @@ public class Runner {
 		HelperUtils.formatLogger();
 	
 	
-		logger.setLevel(Level.FINER);
+		logger.setLevel(Level.FINEST);
 	
 	}
 	
@@ -38,7 +38,7 @@ public class Runner {
 			try {
 			
 			logger.finer("--------WELCOME TO UUB--------");
-			logger.fine("Please Select an option : - ");
+			logger.finer("Please Select an option : - ");
 			logger.fine("1. Login");
 			logger.fine("1. About");
 			logger.fine("3. Exit");
@@ -46,7 +46,7 @@ public class Runner {
 
 			logger.info(UserHelper.accountMapCache.toString());
 			
-			logger.info(TransactionHelper.accountCache.toString());
+			logger.info(UserHelper.accountCache.toString());
 			int choice = scanner.nextInt();
 			scanner.nextLine();
 
@@ -57,7 +57,9 @@ public class Runner {
 				int id = scanner.nextInt();
 				scanner.nextLine();
 				logger.info("Enter Password :");
+				System.out.print("\u001B[8m");
 				String password = scanner.nextLine();
+				System.out.print("[0m");
 				
 				UserType login = loginHelper.login(id, password);
 				

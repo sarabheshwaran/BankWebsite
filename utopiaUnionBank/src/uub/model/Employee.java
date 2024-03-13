@@ -7,6 +7,7 @@ import uub.enums.UserType;
 public class Employee extends User{
 
 	
+	private static final long serialVersionUID = 1L;
 	private EmployeeRole role;
 	private int branchId;
 	

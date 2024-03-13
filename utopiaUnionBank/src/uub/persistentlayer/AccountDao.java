@@ -20,9 +20,9 @@ import uub.staticlayer.HelperUtils;
 public class AccountDao implements IAccountDao {
 
 	@Override
-	public Map<Integer, Account> getUserAccounts(int userId, AccountStatus status) throws CustomBankException {
+	public Map<Integer, Account> getUserAccounts(int userId) throws CustomBankException {
 
-		String getQuery = "SELECT * FROM ACCOUNTS WHERE USER_ID = ? AND ACCOUNTS.STATUS = ? ";
+		String getQuery = "SELECT * FROM ACCOUNTS WHERE USER_ID = ? ";
 
 		Map<Integer, Account> accountMap = new HashMap<Integer, Account>();
 
@@ -30,7 +30,6 @@ public class AccountDao implements IAccountDao {
 				PreparedStatement statement = connection.prepareStatement(getQuery)) {
 
 			statement.setInt(1, userId);
-			statement.setObject(2, status.getStatus());
 			
 			ResultSet resultSet = statement.executeQuery();
 			while (resultSet.next()) {

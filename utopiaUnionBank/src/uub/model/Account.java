@@ -1,11 +1,14 @@
 package uub.model;
 
+import java.io.Serializable;
+
 import uub.enums.AccountStatus;
 import uub.enums.AccountType;
 import uub.staticlayer.HelperUtils;
 
-public class Account {
+public class Account implements Serializable{
 	
+	private static final long serialVersionUID = 1L;
 	private int accNo;
 	private int userId;
 	private int branchId;
@@ -18,7 +21,7 @@ public class Account {
 	@Override
 	public String toString() {
 		return "\nAccount [accNo=" + accNo + ", userId=" + userId + ", branchId=" + branchId + ", type=" + type
-				+ ", balance=" + balance + ", status=" + status + "]";
+				+ ", balance=" + balance + ", status=" + status  +"]";
 	}
 	
 	

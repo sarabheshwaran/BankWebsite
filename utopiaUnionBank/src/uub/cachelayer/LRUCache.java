@@ -1,9 +1,11 @@
-package uub.logicallayer;
+package uub.cachelayer;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class LRUCache<K, V> extends LinkedHashMap<K, V> {
+import uub.staticlayer.CustomBankException;
+
+public class LRUCache<K, V> extends LinkedHashMap<K, V> implements Cache<K, V>{
     private static final long serialVersionUID = 1L;
 
 
@@ -18,5 +20,23 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
         return size() > capacity;
     }
+
+	@Override
+	public void set(K key, V value) throws CustomBankException {
+		this.put(key, value);
+		
+	}
+
+	@Override
+	public void close() {
+		this.clear();
+		
+	}
+
+	@Override
+	public void rem(K key) {
+		super.remove(key);
+		
+	}
     
 }

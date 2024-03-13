@@ -80,6 +80,8 @@ public class EmployeeHelper extends CustomerHelper {
 	public void activateAcc(int accNo) throws CustomBankException {
 
 		Account account = new Account();
+		
+		accountCache.rem(accNo);
 
 		account.setAccNo(accNo);
 		account.setStatus(AccountStatus.ACTIVE);
@@ -93,7 +95,9 @@ public class EmployeeHelper extends CustomerHelper {
 	public void deActivateAcc(int accNo) throws CustomBankException {
 
 		Account account = new Account();
-
+		
+		accountCache.rem(accNo);
+		
 		account.setAccNo(accNo);
 		account.setStatus(AccountStatus.INACTIVE);
 		int result = accountDao.updateAccount(account);
@@ -107,7 +111,10 @@ public class EmployeeHelper extends CustomerHelper {
 	public void addAccount(Account account) throws CustomBankException {
 
 		HelperUtils.nullCheck(account);
-
+		
+		accountMapCache.rem(account.getUserId());
+		accountCache.rem(account.getAccNo());
+		
 		CustomerHelper customerHelper = new CustomerHelper();
 
 		customerHelper.getCustomer(account.getUserId());

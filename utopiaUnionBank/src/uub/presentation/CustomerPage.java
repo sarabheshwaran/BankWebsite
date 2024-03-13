@@ -111,7 +111,7 @@ public class CustomerPage extends Runner {
 	private void getTransaction() throws CustomBankException {
 		CustomerHelper customerHelper = new CustomerHelper();
 		
-		Map<Integer, Account> accounts = customerHelper.getActiveAccounts(customer.getId());
+		Map<Integer, Account> accounts = customerHelper.getAccounts(customer.getId());
 		
 		
 		Transaction transfer = new Transaction();
@@ -158,7 +158,7 @@ public class CustomerPage extends Runner {
 		
 		CustomerHelper customerHelper = new CustomerHelper();
 		
-		Map<Integer, Account> accounts = customerHelper.getActiveAccounts(customer.getId());
+		Map<Integer, Account> accounts = customerHelper.getAccounts(customer.getId());
 
 		int size = accounts.size();
 
@@ -180,8 +180,8 @@ public class CustomerPage extends Runner {
 
 	private void displayAccount(int accNo) throws CustomBankException {
 		
-		TransactionHelper transactionHelper = new TransactionHelper();
-		logger.info(transactionHelper.getAccount(accNo).toString());
+		CustomerHelper customerHelper = new CustomerHelper();
+		logger.info(customerHelper.getAccount(accNo).toString());
 		
 		logger.info("0.withdraw \n1.deposit \n2.history");
 		int option = scanner.nextInt();
