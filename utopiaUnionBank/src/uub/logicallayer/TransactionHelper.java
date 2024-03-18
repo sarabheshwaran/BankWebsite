@@ -42,9 +42,9 @@ public class TransactionHelper {
 
 		}
 
-		Object a = Lock.get(transaction.getUserId());
+		Object lock = Lock.get(transaction.getUserId());
 
-		synchronized (a) {
+		synchronized (lock) {
 
 			setTransaction(transaction);
 
@@ -58,9 +58,9 @@ public class TransactionHelper {
 
 		transaction.setAmount(0 - transaction.getAmount());
 
-		Object a = Lock.get(transaction.getUserId());
+		Object lock = Lock.get(transaction.getUserId());
 
-		synchronized (a) {
+		synchronized (lock) {
 			setTransaction(transaction);
 
 			transactionDao.makeTransaction(List.of(transaction));
@@ -73,9 +73,9 @@ public class TransactionHelper {
 
 		Transaction rTransaction = generateReceiverTransaction(transaction);
 
-		Object a = Lock.get(transaction.getUserId());
+		Object lock = Lock.get(transaction.getUserId());
 
-		synchronized (a) {
+		synchronized (lock) {
 
 			setTransaction(transaction);
 			setTransaction(rTransaction);

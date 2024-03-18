@@ -81,8 +81,12 @@ public class EmployeeHelper extends CustomerHelper {
 
 		Account account = new Account();
 		
-		accountCache.rem(accNo);
+		Object lock = Lock.get(account.getUserId());
 
+		synchronized (lock) {
+		
+		accountCache.rem(accNo);
+		}
 		account.setAccNo(accNo);
 		account.setStatus(AccountStatus.ACTIVE);
 		int result = accountDao.updateAccount(account);
@@ -96,8 +100,12 @@ public class EmployeeHelper extends CustomerHelper {
 
 		Account account = new Account();
 		
-		accountCache.rem(accNo);
+		Object lock = Lock.get(account.getUserId());
+
+		synchronized (lock) {
 		
+		accountCache.rem(accNo);
+		}
 		account.setAccNo(accNo);
 		account.setStatus(AccountStatus.INACTIVE);
 		int result = accountDao.updateAccount(account);
@@ -112,8 +120,13 @@ public class EmployeeHelper extends CustomerHelper {
 
 		HelperUtils.nullCheck(account);
 		
+		Object lock = Lock.get(account.getUserId());
+
+		synchronized (lock) {
+		
 		accountMapCache.rem(account.getUserId());
 		accountCache.rem(account.getAccNo());
+	}
 		
 		CustomerHelper customerHelper = new CustomerHelper();
 

@@ -41,8 +41,8 @@ public class CustomerDao implements ICustomerDao {
 				statement.setObject( 4, customer.getDOB());
 				statement.setObject( 5, customer.getGender());
 				statement.setObject( 6, customer.getPassword());
-				statement.setObject( 7, customer.getUserType());
-				statement.setObject( 8, customer.getStatus());
+				statement.setObject( 7, customer.getUserType().getType());
+				statement.setObject( 8, customer.getStatus().getStatus());
 				statement.addBatch();
 			}
 			statement.executeBatch();
@@ -117,6 +117,7 @@ public class CustomerDao implements ICustomerDao {
 			}
 
 		} catch (SQLException e) {
+			e.printStackTrace();
 			throw new CustomBankException(e.getMessage());
 		}
 

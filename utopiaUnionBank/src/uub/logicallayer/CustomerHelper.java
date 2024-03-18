@@ -47,11 +47,15 @@ public class CustomerHelper extends UserHelper {
 
 	public Customer getCustomer(int id) throws CustomBankException {
 
-		Customer customer = customerCache.get(id);
+		Object lock = Lock.get(id);
 
+		synchronized (lock) {
+
+		Customer customer = customerCache.get(id);
+		
 		if (customer != null) {
 			return customer;
-		}
+		}else {
 
 		List<Customer> customers = customerDao.getCustomers(id);
 
@@ -62,7 +66,7 @@ public class CustomerHelper extends UserHelper {
 
 		} else {
 			throw new CustomBankException(Exceptions.CUSTOMER_NOT_FOUND);
-		}
+		}}}
 
 	}
 

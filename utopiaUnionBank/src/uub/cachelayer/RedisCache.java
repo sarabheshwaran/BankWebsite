@@ -30,13 +30,14 @@ public class RedisCache<K, V> implements Cache<K,V>{
 
     public V get(K key) throws CustomBankException {
         byte[] bytes = jedis.get(key.toString().getBytes());
+        
         if (bytes != null) {
             try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                  ObjectInput in = new ObjectInputStream(bis)) {
 
                 @SuppressWarnings("unchecked")
                 V deserializedValue = (V) in.readObject();
-                
+                System.out.println("cache :");
                 return deserializedValue;
 
             } catch (IOException | ClassNotFoundException e) {
@@ -44,6 +45,7 @@ public class RedisCache<K, V> implements Cache<K,V>{
             	throw new CustomBankException("Incorrect casting");
             }
         }
+        System.out.println("db :");
         return null;
     }
     
